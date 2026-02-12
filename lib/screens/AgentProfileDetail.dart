@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/AppColors.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import '../config/api_endpoints.dart';
 
 class AgentProfileDetail extends StatefulWidget {
   const AgentProfileDetail({super.key});
@@ -97,7 +98,7 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
       print(const JsonEncoder.withIndent('  ').convert(requestBody));
 
       final response = await http.post(
-        Uri.parse('https://p2p-backend.unibots.in/agent/updateProfile'),
+        Uri.parse(ApiEndpoints.updateProfileUrl),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $sessionToken',

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../constants/AppColors.dart';
-
+import '../config/api_endpoints.dart';
 
 import 'PhoneNumberScreen.dart';
 
@@ -103,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         TextButton(
                           onPressed: () async {
-                            final url = Uri.parse('https://align.dating/terms/');
+                            final url = Uri.parse(ApiEndpoints.termsOfUseUrl);
                             if (await canLaunchUrl(url)) { await launchUrl(url); }
                           },
                           child: Text(
@@ -123,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                         TextButton(
                           onPressed: () async {
-                            final url = Uri.parse('https://align.dating/privacy-policy/');
+                            final url = Uri.parse(ApiEndpoints.privacyPolicyUrl);
                             if (await canLaunchUrl(url)) { await launchUrl(url); }
                           },
                           child: Text(

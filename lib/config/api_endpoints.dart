@@ -1,0 +1,34 @@
+import 'api_config.dart';
+
+/// Centralized API endpoints
+/// All endpoints are relative paths that will be combined with base URL
+class ApiEndpoints {
+  // Auth endpoints
+  static const String sendOtp = '/auth/send-otp';
+  static const String verifyOtp = '/auth/verify-otp';
+
+  // Agent endpoints
+  static const String updateProfile = '/api/agent/updateProfile';
+
+  // External URLs (terms, privacy policy, etc.)
+  static const String termsOfUse = '/terms/';
+  static const String privacyPolicy = '/privacy-policy/';
+
+  /// Get full URL for an API endpoint
+  static String getApiUrl(String endpoint) {
+    return '${ApiConfig.baseUrl}$endpoint';
+  }
+
+  /// Get full URL for an external endpoint (terms, privacy, etc.)
+  static String getExternalUrl(String endpoint) {
+    return '${ApiConfig.externalBaseUrl}$endpoint';
+  }
+
+  // Convenience methods for commonly used endpoints
+  static String get sendOtpUrl => getApiUrl(sendOtp);
+  static String get verifyOtpUrl => getApiUrl(verifyOtp);
+  static String get updateProfileUrl => getApiUrl(updateProfile);
+  static String get termsOfUseUrl => getExternalUrl(termsOfUse);
+  static String get privacyPolicyUrl => getExternalUrl(privacyPolicy);
+}
+

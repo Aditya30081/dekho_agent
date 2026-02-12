@@ -11,6 +11,7 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import '../constants/AppColors.dart';
 
 import '../utils/DeviceUtils.dart';
+import '../config/api_endpoints.dart';
 import 'VerificationCodeScreen.dart';
 
 class PhoneNumberScreen extends StatefulWidget {
@@ -401,7 +402,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
 
   Future<void> _sendOtp(BuildContext context) async {
     final deviceId = await DeviceUtils.fetchAndSaveDeviceId();
-    final url = Uri.parse('https://p2p-backend.unibots.in/auth/send-otp');
+    final url = Uri.parse(ApiEndpoints.sendOtpUrl);
     try {
       final response = await http.post(
         url,

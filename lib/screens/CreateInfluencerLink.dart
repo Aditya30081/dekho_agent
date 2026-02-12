@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/AppColors.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -11,9 +12,41 @@ class CreateInfluencerLink extends StatefulWidget {
 }
 
 class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
-  final TextEditingController _urlController = TextEditingController(
-    text: 'https://example.com/influencer-link', // Placeholder URL - will be updated later
-  );
+  final TextEditingController _urlController = TextEditingController();
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInfluencerLink();
+  }
+
+  Future<void> _loadInfluencerLink() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+
+      if (userId != null && userId.isNotEmpty) {
+        final url = 'https://dashboard.thedekhoapp.com/invite-influencer?invite=$userId';
+        setState(() {
+          _urlController.text = url;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _urlController.text = 'https://dashboard.thedekhoapp.com/invite-influencer?invite=agentid';
+          _isLoading = false;
+        });
+        _showError('User ID not found. Please login again.');
+      }
+    } catch (e) {
+      setState(() {
+        _urlController.text = 'https://dashboard.thedekhoapp.com/invite-influencer?invite=agentid';
+        _isLoading = false;
+      });
+      _showError('Error loading user ID: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -85,11 +118,23 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
             Row(
               children: [
                 Expanded(
-                  child: _buildTextField(
-                    controller: _urlController,
-                    hintText: 'Enter influencer link URL',
-                    enabled: true,
-                  ),
+                  child: _isLoading
+                      ? Container(
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade300),
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : _buildTextField(
+                          controller: _urlController,
+                          hintText: 'Enter influencer link URL',
+                          enabled: true,
+                        ),
                 ),
                 const SizedBox(width: 12),
                 // Copy Button

@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/AppColors.dart';
 import '../utils/DeviceUtils.dart';
+import '../config/api_endpoints.dart';
 
 class VerificationCodeScreen extends StatefulWidget {
   final String phoneNumber;
@@ -104,7 +105,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
     final deviceId = await DeviceUtils.fetchAndSaveDeviceId();
     try {
       final response = await http.post(
-        Uri.parse('https://p2p-backend.unibots.in/auth/send-otp'),
+        Uri.parse(ApiEndpoints.sendOtpUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'mobileNumber': widget.phoneNumber,
@@ -227,7 +228,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
       print(const JsonEncoder.withIndent('  ').convert(requestBody));
 
       final response = await http.post(
-        Uri.parse('https://p2p-backend.unibots.in/auth/verify-otp'),
+        Uri.parse(ApiEndpoints.verifyOtpUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(requestBody),
       );
