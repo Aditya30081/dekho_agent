@@ -39,6 +39,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
   int _resendTimer = 60; // 1 minute countdown before resend OTP
   Timer? _timer;
   bool _canResend = false;
+  late String _otpDetails;
   static const String _keyChatUserName = 'chatUserName';
   static const String _keyChatPassword = 'chatPassword';
   static const String _keyChatToken = 'chatToken';
@@ -49,7 +50,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
   void initState() {
     super.initState();
     _startTimer();
-
+    _otpDetails = widget.otpDetails;
     // Add listeners to all controllers
     for (int i = 0; i < _otpControllers.length; i++) {
       _otpControllers[i].addListener(_updateButtonState);
@@ -126,6 +127,13 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
       print('RESEND OTP API Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        String otpDetails = data['otpDetails'] ?? '';
+        setState(() {
+          _otpDetails = otpDetails;
+        });
+        print('SEND OTP Response Data: $data');
+
         Fluttertoast.showToast(
           msg: 'OTP sent successfully',
           toastLength: Toast.LENGTH_SHORT,
@@ -236,7 +244,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
         'otp': otp,
         //'fcmToken': fcmToken,
         'deviceId': deviceId,
-        'otpDetails': widget.otpDetails,
+        'otpDetails': _otpDetails,
         // 'deviceName': deviceName,
         // 'appVersion': appVersion,
         'role': 'agent',
