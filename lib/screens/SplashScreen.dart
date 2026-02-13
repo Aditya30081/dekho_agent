@@ -6,6 +6,7 @@ import '../constants/AppColors.dart';
 import '../config/api_endpoints.dart';
 import 'CreateInfluencerLink.dart';
 import 'LoginScreen.dart';
+import 'AgentProfileDetail.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -93,10 +94,20 @@ class _SplashScreenState extends State<SplashScreen> {
           print('   Final verification result: $isSuccess');
           
           if (isSuccess) {
+            // Extract profileCompleted from response
+            final data = responseData['data'] ?? responseData;
+            final profileCompleted = data['profileCompleted'] ?? responseData['profileCompleted'] ?? false;
+            
             print('✅ JWT VERIFICATION: Session is valid');
-            print('   → Navigating to CreateInfluencerLink');
-            // Session is valid, navigate to CreateInfluencerLink
-            _navigateToCreateInfluencerLink();
+            print('   Profile Completed: $profileCompleted');
+            
+            if (profileCompleted == true) {
+              print('   → Navigating to CreateInfluencerLink (profile completed)');
+              _navigateToCreateInfluencerLink();
+            } else {
+              print('   → Navigating to AgentProfileDetail (profile not completed)');
+              _navigateToAgentProfileDetail();
+            }
           } else {
             print('❌ JWT VERIFICATION: Session validation failed (success flag is false)');
             print('   → Navigating to LoginScreen');
@@ -111,7 +122,7 @@ class _SplashScreenState extends State<SplashScreen> {
           // If status is 200/201, treat as success even if parsing fails
           if (response.statusCode == 200 || response.statusCode == 201) {
             print('✅ JWT VERIFICATION: Treating as success (HTTP ${response.statusCode} despite parse error)');
-            print('   → Navigating to CreateInfluencerLink');
+            print('   → Navigating to CreateInfluencerLink (default, parse error)');
             _navigateToCreateInfluencerLink();
           } else {
             print('❌ JWT VERIFICATION: Parse error and non-success status');
@@ -154,6 +165,17 @@ class _SplashScreenState extends State<SplashScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const CreateInfluencerLink()),
+        );
+      }
+    });
+  }
+
+  void _navigateToAgentProfileDetail() {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AgentProfileDetail()),
         );
       }
     });

@@ -144,6 +144,7 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
         "name": _nameController.text.trim(),
         "email": _emailController.text.trim(),
         "bankDetails": bankDetails,
+        "profileCompleted": true
       };
       
       // Add mobile number if available

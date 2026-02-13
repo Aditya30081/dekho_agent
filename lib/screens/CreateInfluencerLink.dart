@@ -170,8 +170,6 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
-            
             // URL Label
             _buildLabel('Influencer Link URL'),
             const SizedBox(height: 8),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dekho_agent/screens/AgentProfileDetail.dart';
+import 'package:dekho_agent/screens/CreateInfluencerLink.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -275,10 +276,14 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
                             responseData['token'];
         final userId = responseData['data']?['userId'] ?? responseData['userId'];
         final userName = responseData['data']?['name'] ?? responseData['name'];
+        final profileCompleted = responseData['data']?['profileCompleted'] ?? 
+                                responseData['profileCompleted'] ?? 
+                                false;
         
         print('🔑 Extracted sessionToken: ${sessionToken != null ? "Found (${sessionToken.length} chars)" : "NULL"}');
         print('👤 Extracted userId: ${userId ?? "NULL"}');
         print('📝 Extracted userName: ${userName ?? "NULL"}');
+        print('✅ Extracted profileCompleted: $profileCompleted');
         // final userGender = responseData['data']?['user']?['gender'];
         // final userRole = responseData['data']?['user']?['role'];
         // final chatUserName = responseData['data']?['agora']?['chatUserName'] ?? '';
@@ -418,16 +423,22 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
           fontSize: 16.0,
         );
 
-        // Navigate based on internal profileSetupCompleted flag
-        // Check SharedPreferences for the flag (we just saved it above)
-        final isProfileCompleted = prefs.getBool('profileSetupCompleted') ?? false;
+        // Navigate based on profileCompleted from API response
+        print('🔍 Navigation Decision: profileCompleted = $profileCompleted');
         
-        print('🔍 Navigation Decision: isProfileComplete = $isProfileCompleted');
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => AgentProfileDetail()),
-        );
+        if (profileCompleted == true) {
+          print('✅ Profile is completed → Navigating to CreateInfluencerLink');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const CreateInfluencerLink()),
+          );
+        } else {
+          print('❌ Profile is not completed → Navigating to AgentProfileDetail');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const AgentProfileDetail()),
+          );
+        }
         
       } else {
         print('VERIFY OTP API Error - Status Code: ${response.statusCode}');
