@@ -8,7 +8,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import '../config/api_endpoints.dart';
 
 class AgentProfileDetail extends StatefulWidget {
-  const AgentProfileDetail({super.key});
+  final Map<String, dynamic>? profileData;
+  
+  const AgentProfileDetail({super.key, this.profileData});
 
   @override
   State<AgentProfileDetail> createState() => _AgentProfileDetailState();
@@ -29,6 +31,61 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
   final TextEditingController _accountNumberController = TextEditingController();
   final TextEditingController _ifscController = TextEditingController();
   final TextEditingController _bankBranchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _populateFormFromProfileData();
+  }
+
+  void _populateFormFromProfileData() {
+    if (widget.profileData == null) {
+      return;
+    }
+
+    final data = widget.profileData!;
+    
+    // Populate name
+    if (data['name'] != null) {
+      _nameController.text = data['name'].toString();
+    }
+    
+    // Populate email
+    if (data['email'] != null) {
+      _emailController.text = data['email'].toString();
+    }
+    
+    // Populate bank details
+    if (data['bankDetails'] != null && data['bankDetails'] is List) {
+      final bankDetails = data['bankDetails'] as List;
+      if (bankDetails.isNotEmpty) {
+        final bankDetail = bankDetails[0] as Map<String, dynamic>;
+        
+        if (bankDetail['name'] != null) {
+          _bankNameController.text = bankDetail['name'].toString();
+        }
+        if (bankDetail['pan'] != null) {
+          _panController.text = bankDetail['pan'].toString();
+        }
+        if (bankDetail['aadharNumber'] != null) {
+          _aadharController.text = bankDetail['aadharNumber'].toString();
+        }
+        if (bankDetail['bankAccountNumber'] != null) {
+          _accountNumberController.text = bankDetail['bankAccountNumber'].toString();
+        }
+        if (bankDetail['ifsc'] != null) {
+          _ifscController.text = bankDetail['ifsc'].toString();
+        }
+        if (bankDetail['bankBranchName'] != null) {
+          _bankBranchController.text = bankDetail['bankBranchName'].toString();
+        }
+      }
+    }
+    
+    print('PROFILE DATA: Form populated with profile data');
+    print('   Name: ${_nameController.text}');
+    print('   Email: ${_emailController.text}');
+  }
 
   @override
   void dispose() {

@@ -1,8 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/AppColors.dart';
+import '../config/api_endpoints.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'AgentProfileDetail.dart';
 
 class CreateInfluencerLink extends StatefulWidget {
   const CreateInfluencerLink({super.key});
@@ -14,11 +18,82 @@ class CreateInfluencerLink extends StatefulWidget {
 class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   final TextEditingController _urlController = TextEditingController();
   bool _isLoading = true;
-
+  bool _isProfileLoading = true;
+  
+  // Profile data
+  String? _userName;
+  String? _profileImageUrl;
+  double? _rating;
+  Map<String, dynamic>? _profileData;
+  
   @override
   void initState() {
     super.initState();
+    _loadProfile();
     _loadInfluencerLink();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final sessionToken = prefs.getString('sessionToken');
+
+      if (sessionToken == null || sessionToken.isEmpty) {
+        print('GET PROFILE: No session token found');
+        setState(() {
+          _isProfileLoading = false;
+        });
+        return;
+      }
+
+      print('GET PROFILE: Fetching profile data...' +ApiEndpoints.getProfileUrl);
+      final response = await http.get(
+        Uri.parse(ApiEndpoints.getProfileUrl),
+        headers: {
+          'Authorization': 'Bearer $sessionToken',
+        },
+        /*body: jsonEncode(<String, dynamic>{}),*/
+      );
+
+      print('GET PROFILE: Response Status: ${response.statusCode}');
+      print('GET PROFILE: Response Body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = jsonDecode(response.body);
+        
+        if (responseData['success'] == true || response.statusCode == 200) {
+          final data = responseData['data'] ?? responseData;
+          
+          setState(() {
+            _userName = data['name'] ?? data['userName'] ?? 'User';
+            _profileImageUrl = data['profileImage'] ?? data['profilePicture'] ?? data['image'];
+            _rating = (data['rating'] ?? data['score'] ?? 0.0).toDouble();
+            _profileData = data; // Store full profile data
+            _isProfileLoading = false;
+          });
+          
+          print('GET PROFILE: Profile loaded successfully');
+          print('   Name: $_userName');
+          print('   Rating: $_rating');
+          print('   Full Profile Data: $data');
+        } else {
+          print('GET PROFILE: API returned success=false');
+          setState(() {
+            _isProfileLoading = false;
+          });
+        }
+      } else {
+        print('GET PROFILE: Failed with status ${response.statusCode}');
+        setState(() {
+          _isProfileLoading = false;
+        });
+      }
+    } catch (e) {
+      print('GET PROFILE: Error: $e');
+      setState(() {
+        _isProfileLoading = false;
+      });
+    }
   }
 
   Future<void> _loadInfluencerLink() async {
@@ -89,20 +164,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: const Text(
-          'Create Influencer Link',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
+      appBar: _buildProfileAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -232,6 +294,181 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         counterText: '',
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildProfileAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(120),
+      child: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  // Profile Picture
+                  _isProfileLoading
+                      ? Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.grey.shade200,
+                          ),
+                          child: const Center(
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          ),
+                        )
+                      : ClipOval(
+                          child: _profileImageUrl != null && _profileImageUrl!.isNotEmpty
+                              ? Image.network(
+                                  _profileImageUrl!,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 50,
+                                      height: 50,
+                                      color: Colors.grey.shade300,
+                                      child: Icon(
+                                        Icons.person,
+                                        color: Colors.grey.shade600,
+                                        size: 30,
+                                      ),
+                                    );
+                                  },
+                                  loadingBuilder: (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return Container(
+                                      width: 50,
+                                      height: 50,
+                                      color: Colors.grey.shade200,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          value: loadingProgress.expectedTotalBytes != null
+                                              ? loadingProgress.cumulativeBytesLoaded /
+                                                  loadingProgress.expectedTotalBytes!
+                                              : null,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.grey.shade300,
+                                  ),
+                                  child: Icon(
+                                    Icons.person,
+                                    color: Colors.grey.shade600,
+                                    size: 30,
+                                  ),
+                                ),
+                        ),
+                  const SizedBox(width: 12),
+                  // Greeting and Name with Rating
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Hello, ',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blue.shade900,
+                              ),
+                            ),
+                            Text(
+                              _userName ?? 'User',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.blue.shade900,
+                              ),
+                            ),
+                            /*if (_rating != null) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                '($_rating⭐)',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.orange,
+                                ),
+                              ),
+                            ],*/
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        // Edit Profile
+                        InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => AgentProfileDetail(profileData: _profileData),
+                              ),
+                            );
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.edit,
+                                size: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Edit Profile',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Menu Icon
+                  /*IconButton(
+                    icon: Icon(
+                      Icons.more_vert,
+                      color: Colors.grey.shade700,
+                    ),
+                    onPressed: () {
+                      // TODO: Implement menu functionality
+                    },
+                  ),*/
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Separator line
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: Colors.grey.shade300,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -440,7 +440,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
         //   //await SharedPreferenceManager.saveString('otpDetails', data['otpDetails'] ?? '');
         // }
 
-        Navigator.pushReplacement(
+        Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => VerificationCodeScreen(
