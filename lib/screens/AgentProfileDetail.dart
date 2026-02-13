@@ -94,7 +94,9 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
         requestBody["mobileNumber"] = mobileNumber;
       }
 
-      print("UPDATE PROFILE REQUEST BODY:");
+      print("UPDATE PROFILE REQUEST:");
+      print("URL: ${ApiEndpoints.updateProfileUrl}");
+      print("REQUEST BODY:");
       print(const JsonEncoder.withIndent('  ').convert(requestBody));
 
       final response = await http.post(
@@ -106,8 +108,8 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
         body: jsonEncode(requestBody),
       );
 
-      print('Update Profile response status: ${response.statusCode}');
-      print('Update Profile response body: ${response.body}');
+      print('UPDATE PROFILE API Response Status: ${response.statusCode}');
+      print('UPDATE PROFILE API Response Body: ${response.body}');
 
       setState(() {
         _isLoading = false;
@@ -115,6 +117,7 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
+        print('UPDATE PROFILE Response Data: $responseData');
         if (responseData['success'] == true || response.statusCode == 200) {
           _showSuccess('Profile updated successfully!');
           // Navigator.of(context).pop();
@@ -123,18 +126,21 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
           _showError(responseData['message'] ?? 'Failed to update profile');
         }
       } else {
+        print('UPDATE PROFILE API Error - Status Code: ${response.statusCode}');
         try {
           final errorData = jsonDecode(response.body);
+          print('UPDATE PROFILE API Error Response: $errorData');
           final errorMessage = errorData['message'] ?? 
                               errorData['error'] ?? 
                               'Failed to update profile';
           _showError(errorMessage.toString());
         } catch (e) {
+          print('UPDATE PROFILE API Error parsing response: $e');
           _showError('Failed to update profile. Status: ${response.statusCode}');
         }
       }
     } catch (e) {
-      print('Error updating profile: $e');
+      print('UPDATE PROFILE API Exception: $e');
       setState(() {
         _isLoading = false;
       });

@@ -104,6 +104,14 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
     });
     final deviceId = await DeviceUtils.fetchAndSaveDeviceId();
     try {
+      print("RESEND OTP REQUEST:");
+      print("URL: ${ApiEndpoints.sendOtpUrl}");
+      print("Body: ${jsonEncode({
+        'mobileNumber': widget.phoneNumber,
+        'role': 'agent',
+        'deviceId': deviceId,
+      })}");
+
       final response = await http.post(
         Uri.parse(ApiEndpoints.sendOtpUrl),
         headers: {'Content-Type': 'application/json'},
@@ -113,6 +121,9 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
           'deviceId': deviceId,
         }),
       );
+
+      print('RESEND OTP API Response Status: ${response.statusCode}');
+      print('RESEND OTP API Response Body: ${response.body}');
 
       if (response.statusCode == 200) {
         Fluttertoast.showToast(
@@ -132,6 +143,13 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
         }
         _focusNodes[0].requestFocus();
       } else {
+        print('RESEND OTP API Error - Status Code: ${response.statusCode}');
+        try {
+          final errorData = jsonDecode(response.body);
+          print('RESEND OTP API Error Response: $errorData');
+        } catch (e) {
+          print('RESEND OTP API Error parsing response: $e');
+        }
         Fluttertoast.showToast(
           msg: 'Unable to send OTP',
           toastLength: Toast.LENGTH_LONG,
@@ -142,6 +160,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
         );
       }
     } catch (e) {
+      print('RESEND OTP API Exception: $e');
       Fluttertoast.showToast(
         msg: 'Error: $e',
         toastLength: Toast.LENGTH_SHORT,
@@ -233,18 +252,33 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
         body: jsonEncode(requestBody),
       );
 
-      print('OTP verification response status: ${response.statusCode}');
+      print('VERIFY OTP API Response Status: ${response.statusCode}');
+      print('VERIFY OTP API Response Body: ${response.body}');
+      
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        print('Verify OTP response: $responseData');
+        print('VERIFY OTP Response Data: $responseData');
+        print('📋 VERIFY OTP Response Structure Check:');
+        print('   - responseData keys: ${responseData.keys}');
+        print('   - responseData["data"]: ${responseData['data']}');
+        if (responseData['data'] != null) {
+          print('   - responseData["data"] keys: ${responseData['data'].keys}');
+        }
 
         // Save all values to SharedPreferences
         final prefs = await SharedPreferences.getInstance();
 
-
-        final sessionToken = responseData['data']?['sessionToken'];
-        final userId = responseData['data']?['userId'];
-        final userName = responseData['data']?['name'];
+        // Try different possible response structures
+        final sessionToken = responseData['data']?['sessionToken'] ?? 
+                            responseData['sessionToken'] ?? 
+                            responseData['data']?['token'] ??
+                            responseData['token'];
+        final userId = responseData['data']?['userId'] ?? responseData['userId'];
+        final userName = responseData['data']?['name'] ?? responseData['name'];
+        
+        print('🔑 Extracted sessionToken: ${sessionToken != null ? "Found (${sessionToken.length} chars)" : "NULL"}');
+        print('👤 Extracted userId: ${userId ?? "NULL"}');
+        print('📝 Extracted userName: ${userName ?? "NULL"}');
         // final userGender = responseData['data']?['user']?['gender'];
         // final userRole = responseData['data']?['user']?['role'];
         // final chatUserName = responseData['data']?['agora']?['chatUserName'] ?? '';
@@ -254,12 +288,47 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
         // final fireBaseCustomToken = responseData['data']?['fireBaseCustomToken'] ?? '';
 
 
-        // Save to SharedPreferences
-        if (sessionToken != null) await prefs.setString('sessionToken', sessionToken);
-        if (userId != null) await prefs.setString('userId', userId);
-        if (userName != null) await prefs.setString('user_name', userName);
+        // Save to SharedPreferences - await ensures save completes
+        if (sessionToken != null && sessionToken.toString().isNotEmpty) {
+          final tokenSaved = await prefs.setString('sessionToken', sessionToken.toString());
+          print('✅ Session Token save operation result: $tokenSaved');
+          print('✅ Session Token saved to SharedPreferences: ${sessionToken.toString().substring(0, sessionToken.toString().length > 20 ? 20 : sessionToken.toString().length)}...');
+          
+          // Verify the save was successful by reading it back
+          final savedToken = await Future.value(prefs.getString('sessionToken'));
+          if (savedToken != null && savedToken == sessionToken.toString()) {
+            print('✅ Verification: SessionToken confirmed saved correctly (${savedToken.length} chars)');
+          } else {
+            print('⚠️ WARNING: SessionToken save verification failed - token may not be persisted');
+            print('   Expected: ${sessionToken.toString().substring(0, sessionToken.toString().length > 50 ? 50 : sessionToken.toString().length)}...');
+            print('   Got: ${savedToken != null ? savedToken.substring(0, savedToken.length > 50 ? 50 : savedToken.length) : "NULL"}...');
+          }
+        } else {
+          print('❌ ERROR: sessionToken is NULL or empty - NOT SAVED!');
+          print('   Response structure: ${responseData.toString()}');
+        }
+        
+        if (userId != null) {
+          await prefs.setString('userId', userId.toString());
+          print('✅ User ID saved to SharedPreferences: $userId');
+        } else {
+          print('⚠️ User ID is NULL - NOT SAVED');
+        }
+        
+        if (userName != null) {
+          await prefs.setString('user_name', userName.toString());
+          print('✅ User Name saved to SharedPreferences: $userName');
+        }
+        
         // Save mobile number for profile updates
         await prefs.setString('mobileNumber', widget.phoneNumber);
+        print('✅ Mobile Number saved to SharedPreferences: ${widget.phoneNumber}');
+        
+        // Final verification - get all keys to see what's stored
+        final allKeys = await Future.value(prefs.getKeys());
+        print('📋 All SharedPreferences keys after save: $allKeys');
+        final finalTokenCheck = await Future.value(prefs.getString('sessionToken'));
+        print('🔍 Final token check before navigation: ${finalTokenCheck != null ? "EXISTS (${finalTokenCheck.length} chars)" : "MISSING!"}');
         // if (chatUserName != null) await prefs.setString(_keyChatUserName, chatUserName);
         // if (chatPassword != null) await prefs.setString(_keyChatPassword, chatPassword);
         // if (appToken != null) await prefs.setString(_keyChatToken, appToken);
@@ -361,7 +430,9 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
         );
         
       } else {
+        print('VERIFY OTP API Error - Status Code: ${response.statusCode}');
         final errorData = jsonDecode(response.body);
+        print('VERIFY OTP API Error Response: $errorData');
         final errorMessage = errorData['message'] ?? 'OTP Verification Failed';
         
         Fluttertoast.showToast(

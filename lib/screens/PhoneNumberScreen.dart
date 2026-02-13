@@ -404,6 +404,14 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
     final deviceId = await DeviceUtils.fetchAndSaveDeviceId();
     final url = Uri.parse(ApiEndpoints.sendOtpUrl);
     try {
+      print("SEND OTP REQUEST:");
+      print("URL: $url");
+      print("Body: ${jsonEncode({
+        'mobileNumber': _phoneNumber,
+        'role': 'agent',
+        'deviceId': deviceId,
+      })}");
+
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -415,13 +423,16 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
         }),
       );
 
+      print('SEND OTP API Response Status: ${response.statusCode}');
+      print('SEND OTP API Response Body: ${response.body}');
+
       String message;
 
       if (response.statusCode == 200) {
         message = 'OTP sent successfully';
         final data = jsonDecode(response.body);
         String otpDetails = data['otpDetails'] ?? '';
-        print('OTP Response Data: $data');
+        print('SEND OTP Response Data: $data');
         // final existingUser = data['existingUser'];
         // if (existingUser) {
         //   await SharedPreferenceManager.saveString('temp_phone_number', _phoneNumber);
@@ -448,8 +459,10 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
           fontSize: 16.0,
         );
       } else {
+        print('SEND OTP API Error - Status Code: ${response.statusCode}');
         try {
           final responseBody = jsonDecode(response.body);
+          print('SEND OTP API Error Response: $responseBody');
           final errorCode = responseBody['code'];
           final errorMessage = responseBody['message'] ?? 'Failed to send OTP';
 
@@ -465,10 +478,12 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
             _showSnackBar(context, message);
           }
         } catch (e) {
+          print('SEND OTP API Error parsing response: $e');
           _showSnackBar(context, 'Failed to send OTP');
         }
       }
     } catch (e) {
+      print('SEND OTP API Exception: $e');
       _showSnackBar(context, 'Error sending OTP: $e');
     }
   }

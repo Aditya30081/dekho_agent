@@ -1,6 +1,4 @@
-import 'package:dekho_agent/screens/AgentProfileDetail.dart';
-import 'package:dekho_agent/screens/LoginScreen.dart';
-import 'package:dekho_agent/screens/VerificationCodeScreen.dart';
+import 'package:dekho_agent/screens/SplashScreen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -14,8 +12,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      home: const LoginScreen(),
+      title: 'Dekho Agent',
+      home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

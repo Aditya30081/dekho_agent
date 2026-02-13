@@ -6,6 +6,7 @@ class ApiEndpoints {
   // Auth endpoints
   static const String sendOtp = '/auth/send-otp';
   static const String verifyOtp = '/auth/verify-otp';
+  static const String sessionLogin = '/auth/session-login';
 
   // Agent endpoints
   static const String updateProfile = '/api/agent/updateProfile';
@@ -27,6 +28,7 @@ class ApiEndpoints {
   // Convenience methods for commonly used endpoints
   static String get sendOtpUrl => getApiUrl(sendOtp);
   static String get verifyOtpUrl => getApiUrl(verifyOtp);
+  static String get sessionLoginUrl => getApiUrl(sessionLogin);
   static String get updateProfileUrl => getApiUrl(updateProfile);
   static String get termsOfUseUrl => getExternalUrl(termsOfUse);
   static String get privacyPolicyUrl => getExternalUrl(privacyPolicy);
