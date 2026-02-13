@@ -10,6 +10,7 @@ class ApiEndpoints {
 
   // Agent endpoints
   static const String updateProfile = '/api/agent/updateProfile';
+  static const String getProfile = '/api/agent/getProfile';
 
   // External URLs (terms, privacy policy, etc.)
   static const String termsOfUse = '/terms/';
@@ -30,6 +31,7 @@ class ApiEndpoints {
   static String get verifyOtpUrl => getApiUrl(verifyOtp);
   static String get sessionLoginUrl => getApiUrl(sessionLogin);
   static String get updateProfileUrl => getApiUrl(updateProfile);
+  static String get getProfileUrl => getApiUrl(getProfile);
   static String get termsOfUseUrl => getExternalUrl(termsOfUse);
   static String get privacyPolicyUrl => getExternalUrl(privacyPolicy);
 }
