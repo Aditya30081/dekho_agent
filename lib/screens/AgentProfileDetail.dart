@@ -381,6 +381,9 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
                         if (value.trim().length != 11) {
                           return 'IFSC must be 11 characters';
                         }
+                        if (!RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$').hasMatch(value.trim())) {
+                          return 'Invalid IFSC code format';
+                        }
                         return null;
                       },
                     ),

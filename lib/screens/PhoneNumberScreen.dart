@@ -1,17 +1,13 @@
 import 'dart:convert';
-import 'dart:ffi';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl_phone_field/country_picker_dialog.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
-import '../constants/AppColors.dart';
 
-import '../utils/DeviceUtils.dart';
 import '../config/api_endpoints.dart';
+import '../constants/AppColors.dart';
+import '../utils/DeviceUtils.dart';
 import 'VerificationCodeScreen.dart';
 
 class PhoneNumberScreen extends StatefulWidget {

@@ -34,29 +34,29 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
-  image_picker: ^1.2.0
-  video_thumbnail: ^0.5.3
-  video_player: ^2.8.2
+#  image_picker: ^1.2.0
+#  video_thumbnail: ^0.5.3
+#  video_player: ^2.8.2
   path_provider: ^2.1.1
   permission_handler: ^11.3.0
   shared_preferences: ^2.2.2
   device_info_plus: ^10.1.0
   http: ^1.2.0
-  firebase_core: ^4.3.0
-  firebase_auth: ^6.1.3
-  cloud_firestore: ^6.1.1
-  firebase_messaging: ^16.1.0
-  audioplayers: ^6.0.0
-  card_swiper: ^3.0.1
-  socket_io_client: ^2.0.3+1
+#  firebase_core: ^4.3.0
+#  firebase_auth: ^6.1.3
+#  cloud_firestore: ^6.1.1
+#  firebase_messaging: ^16.1.0
+#  audioplayers: ^6.0.0
+#  card_swiper: ^3.0.1
+#  socket_io_client: ^2.0.3+1
   fluttertoast: ^8.2.8
   url_launcher: ^6.3.2
   intl_phone_field: ^3.2.0
   intl: ^0.19.0
-  connectivity_plus: ^6.1.0
+#  connectivity_plus: ^6.1.0
   package_info_plus: ^8.0.0
-  crypto: ^3.0.5
-  wakelock_plus: ^1.2.8
+#  crypto: ^3.0.5
+#  wakelock_plus: ^1.2.8
 
 dev_dependencies:
   flutter_test:
@@ -84,6 +84,7 @@ flutter:
     - assets/wallet.png
     - assets/coins.png
     - assets/green_tick.png
+    - assets/placeholder.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

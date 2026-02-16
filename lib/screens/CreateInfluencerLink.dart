@@ -308,73 +308,14 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
               Row(
                 children: [
                   // Profile Picture
-                  _isProfileLoading
-                      ? Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.grey.shade200,
-                          ),
-                          child: const Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
-                        )
-                      : ClipOval(
-                          child: _profileImageUrl != null && _profileImageUrl!.isNotEmpty
-                              ? Image.network(
-                                  _profileImageUrl!,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Container(
-                                      width: 50,
-                                      height: 50,
-                                      color: Colors.grey.shade300,
-                                      child: Icon(
-                                        Icons.person,
-                                        color: Colors.grey.shade600,
-                                        size: 30,
-                                      ),
-                                    );
-                                  },
-                                  loadingBuilder: (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Container(
-                                      width: 50,
-                                      height: 50,
-                                      color: Colors.grey.shade200,
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          value: loadingProgress.expectedTotalBytes != null
-                                              ? loadingProgress.cumulativeBytesLoaded /
-                                                  loadingProgress.expectedTotalBytes!
-                                              : null,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                )
-                              : Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.grey.shade300,
-                                  ),
-                                  child: Icon(
-                                    Icons.person,
-                                    color: Colors.grey.shade600,
-                                    size: 30,
-                                  ),
-                                ),
-                        ),
+                 ClipOval(
+                    child: Image.asset(
+                      'assets/placeholder.png', // Placeholder image
+                      width: 50,
+                      height: 50,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   // Greeting and Name with Rating
                   Expanded(
