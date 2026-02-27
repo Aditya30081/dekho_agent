@@ -112,7 +112,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
         'role': 'agent',
         'deviceId': deviceId,
       })}");
-
+      final appVersion = await DeviceUtils.getAppVersion();
       final response = await http.post(
         Uri.parse(ApiEndpoints.sendOtpUrl),
         headers: {'Content-Type': 'application/json'},
@@ -120,6 +120,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
           'mobileNumber': widget.phoneNumber,
           'role': 'agent',
           'deviceId': deviceId,
+          'appVersion': appVersion,
         }),
       );
 
@@ -246,7 +247,7 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
         'deviceId': deviceId,
         'otpDetails': _otpDetails,
         // 'deviceName': deviceName,
-        // 'appVersion': appVersion,
+        'appVersion': appVersion,
         'role': 'agent',
       };
 

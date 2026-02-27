@@ -398,6 +398,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
 
   Future<void> _sendOtp(BuildContext context) async {
     final deviceId = await DeviceUtils.fetchAndSaveDeviceId();
+    final appVersion = await DeviceUtils.getAppVersion();
     final url = Uri.parse(ApiEndpoints.sendOtpUrl);
     try {
       print("SEND OTP REQUEST:");
@@ -406,6 +407,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
         'mobileNumber': _phoneNumber,
         'role': 'agent',
         'deviceId': deviceId,
+        'appVersion': appVersion
       })}");
 
       final response = await http.post(

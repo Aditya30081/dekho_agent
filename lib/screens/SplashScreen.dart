@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/AppColors.dart';
 import '../config/api_endpoints.dart';
+import '../utils/DeviceUtils.dart';
 import 'CreateInfluencerLink.dart';
 import 'LoginScreen.dart';
 import 'AgentProfileDetail.dart';
@@ -55,11 +56,16 @@ class _SplashScreenState extends State<SplashScreen> {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $sessionToken',
       };
-      
+      final appVersion = await DeviceUtils.getAppVersion();
+
+
       // Some APIs require an empty JSON body for POST requests with Content-Type: application/json
       // If this doesn't work, try removing the body parameter: body: jsonEncode({})
-      final requestBody = jsonEncode(<String, dynamic>{});
-      
+      /*final requestBody = jsonEncode(<String, dynamic>{});*/
+      final requestBody = {
+        'appVersion': appVersion,
+      };
+
       print('   Headers: {Content-Type: application/json, Authorization: Bearer ***}');
       print('   Authorization Header Value: Bearer ${sessionToken.substring(0, sessionToken.length > 50 ? 50 : sessionToken.length)}...');
       print('   Request Body: $requestBody');
