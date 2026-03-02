@@ -418,6 +418,8 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
           'role': 'agent',
           // 'existingUser': widget.existingUser,
           'deviceId': deviceId,
+          'appVersion': appVersion
+
         }),
       );
 
