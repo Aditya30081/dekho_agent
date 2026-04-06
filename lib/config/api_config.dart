@@ -1,7 +1,7 @@
 /// API Configuration for managing base URLs across different environments
 class ApiConfig {
   // Environment enum
-  static const Environment _currentEnvironment = Environment.prod;
+  static const Environment _currentEnvironment = Environment.dev;
 
   // Base URLs for different environments
   static const String _devBaseUrl = 'https://p2p-backend.unibots.in';

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color primaryColor = Color(0xFFED5E0F); // example red
+  static const Color primaryColor = Color(0xFFF76F1A); // example red
   // static const Color selectedColor = Color(0xFFEE0E67); // example red
-  static const Color selectedColor = Color(0xFFF87216); // example red
+  static const Color selectedColor = Color(0xFFE03465); // example red
   static const Color selectedColorOther = Color(0xFFFFCB2B); // example red
   static const Color boostColor = Colors.deepPurple; // example red
   static const Color selectedLightColor = Color(0xC5EE0E67); // example red
@@ -21,6 +21,7 @@ class AppColors {
   static const Color purpleColorBG = Color(0xFFFAF5FF); // example red = Colors.white;
   static const Color purpleCBtn = Color(0xFF9333EA); // example red = Colors.white;
   static const Color border = Color(0xFFFFA611); // example red = Colors.white;
+  static const Color orange = Color(0xFFEC6922); // example red = Colors.white;
 
   //static const List<Color> gradientButton = [Color(0xFF0076B2), Color(0xFF26B5F2)];
   static const List<Color> gradientButton = [selectedColor, selectedColor];

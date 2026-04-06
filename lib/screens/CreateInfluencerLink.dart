@@ -1,12 +1,11 @@
 import 'dart:convert';
+import 'package:dekho_agent/constants/AppColors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import '../constants/AppColors.dart';
 import '../config/api_endpoints.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'AgentProfileDetail.dart';
 
 class CreateInfluencerLink extends StatefulWidget {
   const CreateInfluencerLink({super.key});
@@ -19,6 +18,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   final TextEditingController _urlController = TextEditingController();
   bool _isLoading = true;
   bool _isProfileLoading = true;
+  int _selectedTabIndex = 0;
   
   // Profile data
   String? _userName;
@@ -163,251 +163,686 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildProfileAppBar(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+      backgroundColor: const Color(0xFFF9F9FB),
+      appBar: _buildDashboardAppBar(),
+      body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // URL Label
-            _buildLabel('Influencer Link URL'),
-            const SizedBox(height: 8),
-            
-            // URL TextField with Copy Button
-            Row(
-              children: [
-                Expanded(
-                  child: _isLoading
-                      ? Container(
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
-                          ),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        )
-                      : _buildTextField(
-                          controller: _urlController,
-                          hintText: 'Enter influencer link URL',
-                          enabled: true,
-                        ),
-                ),
-                const SizedBox(width: 12),
-                // Copy Button
-                Container(
-                  height: 56, // Match text field height
-                  width: 56,
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: _copyToClipboard,
-                      borderRadius: BorderRadius.circular(8),
-                      child: const Icon(
-                        Icons.copy,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+      /// 🔒 FIXED PART (WILL NOT SCROLL)
+      Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTabs(),
+          const SizedBox(height: 14),
+          _buildBalanceCard(),
+          const SizedBox(height: 16),
+        ],
+      ),
+    ),
+
+            /// 🔽 SCROLLABLE PART
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildOnboardCreatorsCard(),
+                    const SizedBox(height: 16),
+                    _buildQuickStats(),
+                    const SizedBox(height: 18),
+                    _buildSectionTitle('Creator Details'),
+                    const SizedBox(height: 10),
+
+                    _buildCreatorCard(
+                      name: 'Anjali Gupta',
+                      creatorId: 'INF_77192',
+                      phone: '+9188990 01122',
+                      callTime: '180 Mins',
+                      earned: '12,000',
+                      yourShare: '1,200',
+                      isOnline: false,
                     ),
-                  ),
+                    const SizedBox(height: 12),
+
+                    _buildCreatorCard(
+                      name: 'Riya Singh',
+                      creatorId: 'INF_55910',
+                      phone: '+9199987 78655',
+                      callTime: '240 Mins',
+                      earned: '19,400',
+                      yourShare: '2,100',
+                      isOnline: false,
+                      isNew: true,
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
-            const SizedBox(height: 30),
           ],
-        ),
       ),
     );
   }
 
-  Widget _buildLabel(String label) {
-    return Text(
-      label,
-      style: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: Colors.black,
+  Widget _buildTabs() {
+    const tabs = ['Today', 'Weekly', 'Monthly', 'Overall'];
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFEFEFF3),
+        borderRadius: BorderRadius.circular(14),
       ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    TextInputType? keyboardType,
-    bool enabled = true,
-    int? maxLength,
-    TextCapitalization textCapitalization = TextCapitalization.none,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      enabled: enabled,
-      keyboardType: keyboardType ?? TextInputType.url,
-      maxLength: maxLength,
-      textCapitalization: textCapitalization,
-      validator: validator,
-      style: TextStyle(
-        color: enabled ? Colors.black : Colors.grey,
-        fontSize: 16,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(
-          color: Colors.grey.shade400,
-          fontSize: 16,
-        ),
-        filled: true,
-        fillColor: enabled ? Colors.white : Colors.grey.shade100,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.primaryColor, width: 2),
-        ),
-        disabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.red, width: 2),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        counterText: '',
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildProfileAppBar() {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(120),
-      child: Container(
-        color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: SafeArea(
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  // Profile Picture
-                 ClipOval(
-                    child: Image.asset(
-                      'assets/placeholder.png', // Placeholder image
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                    ),
+      child: Row(
+        children: List.generate(tabs.length, (index) {
+          final isSelected = _selectedTabIndex == index;
+          return Expanded(
+            child: InkWell(
+              onTap: () => setState(() => _selectedTabIndex = index),
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  tabs[index],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isSelected
+                        ? AppColors.orange
+                        : const Color(0xFF8D8F98),
                   ),
-                  const SizedBox(width: 12),
-                  // Greeting and Name with Rating
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildBalanceCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [AppColors.primaryColor, AppColors.selectedColor],
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Image.asset(
+                'assets/wallet.png',
+                width: 18,
+                height: 18,
+              ),
+              SizedBox(width: 8),
+              const Text(
+                'Total Commission',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.22),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Today',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Row(
+            children: [
+              Icon(Icons.diamond, color: Color(0xFFFFD457), size: 28),
+              SizedBox(width: 8),
+              Text(
+                '4,500',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 54,
+                  height: 1,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Eligible Withdrawal : 1000 ',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 14),
+          // Row(
+          //   children: [
+          //     Expanded(
+          //       child: _roundedActionButton(
+          //         label: 'Cash Out',
+          //         icon: Icons.account_balance_wallet_outlined,
+          //         backgroundColor: Colors.white,
+          //         textColor: const Color(0xFFDB5F1A),
+          //       ),
+          //     ),
+          //     const SizedBox(width: 10),
+          //     Expanded(
+          //       child: _roundedActionButton(
+          //         label: 'History',
+          //         icon: Icons.history_rounded,
+          //         backgroundColor: Colors.white.withValues(alpha: 0.2),
+          //         textColor: Colors.white,
+          //       ),
+          //     ),
+          //   ],
+          // )
+        ],
+      ),
+    );
+  }
+
+  Widget _roundedActionButton({
+    required String label,
+    required IconData icon,
+    required Color backgroundColor,
+    required Color textColor,
+  }) {
+    return Container(
+      height: 44,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 18, color: textColor),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOnboardCreatorsCard() {
+    final inviteLink = _isLoading || _urlController.text.trim().isEmpty
+        ? 'dekho.app/join?agt-9921'
+        : _urlController.text.trim();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFECECF1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Onboard Creators',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            inviteLink,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF8A8D97),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: _copyToClipboard,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF7ED),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Hello, ',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue.shade900,
-                              ),
-                            ),
-                            Text(
-                              _userName ?? 'User',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.blue.shade900,
-                              ),
-                            ),
-                            /*if (_rating != null) ...[
-                              const SizedBox(width: 6),
-                              Text(
-                                '($_rating⭐)',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.orange,
-                                ),
-                              ),
-                            ],*/
-                          ],
+                       Image.asset(
+                          'assets/copy.png',
+                          width: 18,
+                          height: 18,
                         ),
-                        const SizedBox(height: 4),
-                        // Edit Profile
-                        InkWell(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => AgentProfileDetail(profileData: _profileData),
-                              ),
-                            );
-                          },
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.edit,
-                                size: 14,
-                                color: Colors.grey.shade600,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Edit Profile',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ],
+                        SizedBox(width: 8),
+                        Text(
+                          'Copy Link',
+                          style: TextStyle(
+                            color: AppColors.orange,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  // Menu Icon
-                  /*IconButton(
-                    icon: Icon(
-                      Icons.more_vert,
-                      color: Colors.grey.shade700,
-                    ),
-                    onPressed: () {
-                      // TODO: Implement menu functionality
-                    },
-                  ),*/
-                ],
+                ),
               ),
-              const SizedBox(height: 8),
-              // Separator line
-              Divider(
-                height: 1,
-                thickness: 1,
-                color: Colors.grey.shade300,
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickStats() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionTitle('Quick Stats'),
+        const SizedBox(height: 10),
+        Row(
+          children: const [
+            Expanded(
+              child: _StatCard(
+                icon: 'assets/creators.png',
+                iconColor: Color(0xFF5B84F1),
+                title: 'Total Creators',
+                value: '24',
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: _StatCard(
+                icon: 'assets/time.png',
+                iconColor: Color(0xFF11AF65),
+                title: 'Call Minutes',
+                value: '1,420',
+              ),
+            ),
+            SizedBox(width: 10),
+            Expanded(
+              child: _StatCard(
+                icon: 'assets/gifts.png',
+                iconColor: Color(0xFFE66FA5),
+                title: 'Gifts Received',
+                value: '845',
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: Color(0xFF1F2A45),
+      ),
+    );
+  }
+
+  Widget _buildCreatorCard({
+    required String name,
+    required String creatorId,
+    required String phone,
+    required String callTime,
+    required String earned,
+    required String yourShare,
+    bool isOnline = false,
+    bool isNew = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFEEEEF3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: const Color(0xFFF2F2F5),
+                backgroundImage: _profileImageUrl != null && _profileImageUrl!.isNotEmpty
+                    ? NetworkImage(_profileImageUrl!)
+                    : null,
+                child: _profileImageUrl == null || _profileImageUrl!.isEmpty
+                    ? Text(
+                        name.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join(),
+                        style: const TextStyle(
+                          color: Color(0xFF838795),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            name,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF212A40),
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        if (isOnline)
+                          _buildTag(
+                            text: 'ONLINE',
+                            background: const Color(0xFFE4F8EA),
+                            foreground: const Color(0xFF18A14D),
+                          ),
+                      /*  if (isNew)
+                          _buildTag(
+                            text: 'NEW',
+                            background: const Color(0xFFFFF5D9),
+                            foreground: const Color(0xFFC38A00),
+                          ),*/
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'ID: $creatorId',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF8A8A8A),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Image.asset('assets/call.png', width: 14, height: 14),
+                          const SizedBox(width: 4),
+                        Text(
+                          phone,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF8A8A8A),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          _horizontalDivider(),
+          Row(
+            children: [
+              Expanded(child: _metricCell('CALL TIME', callTime)),
+              _verticalDivider(),
+              Expanded(child: _metricCell('CREATOR EARNED', earned)),
+              _verticalDivider(),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8.0, left: 8.0, right: 8.0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF7ED),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: _metricCell(
+                      'YOUR SHARE',
+                      '+$yourShare',
+                      valueColor: const Color(0xFFE78824),
+                      titleColor: const Color(0xFFE78824),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _metricCell(
+    String title,
+    String value, {
+    Color titleColor = const Color(0xFFA1A5B1),
+    Color valueColor = const Color(0xFF1F2840),
+  }) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: titleColor,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: valueColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _verticalDivider() {
+    return Container(
+      height: 38,
+      width: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      color: const Color(0xFFE6E8EE),
+    );
+  }
+
+  Widget _horizontalDivider() {
+    return Container(
+      height: 1,
+      width: 340,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      color: Colors.grey.shade100,
+    );
+  }
+
+  Widget _buildTag({
+    required String text,
+    required Color background,
+    required Color foreground,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: foreground,
+          fontWeight: FontWeight.w700,
+          fontSize: 11,
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildDashboardAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(96),
+      child: Container(
+        color: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: SafeArea(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFF5D2B3), width: 2),
+                  color: const Color(0xFFFFFAF5),
+                ),
+                child: Image.asset(
+                  'assets/user.png',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Agent Dashboard',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF152445),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'ID: ${_userName == null ? 'AGT_9921' : 'AGT_9921'}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Color(0xFF8E93A3),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String icon;
+  final Color iconColor;
+  final String title;
+  final String value;
+
+  const _StatCard({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEDEDF2)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Image.asset(
+              icon, // Replace this with the path to your asset image
+              fit: BoxFit.contain,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF9AA0AE),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1B253E),
+            ),
+          ),
+        ],
       ),
     );
   }

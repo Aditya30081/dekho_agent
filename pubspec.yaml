@@ -85,6 +85,13 @@ flutter:
     - assets/coins.png
     - assets/green_tick.png
     - assets/placeholder.png
+    - assets/copy.png
+    - assets/creators.png
+    - assets/gifts.png
+    - assets/time.png
+    - assets/user.png
+    - assets/wallet.png
+    - assets/call.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
