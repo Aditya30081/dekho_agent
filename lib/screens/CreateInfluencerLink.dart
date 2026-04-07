@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dekho_agent/constants/AppColors.dart';
+import 'package:dekho_agent/screens/AgentProfileDetail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -36,9 +37,22 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
     super.initState();
     _selectedTabIndex = 0;
     _selectedType = 'today';
+    _loadSavedName();
     _loadProfile();
     _loadInfluencerLink();
     _loadAgentStats();
+  }
+
+  Future<void> _loadSavedName() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedName = prefs.getString('agentName');
+      if (savedName != null && savedName.trim().isNotEmpty) {
+        setState(() {
+          _userName = savedName.trim();
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadProfile() async {
@@ -73,7 +87,6 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
           final data = responseData['data'] ?? responseData;
           
           setState(() {
-            _userName = data['name'] ?? data['userName'] ?? 'User';
             _profileImageUrl = data['profileImage'] ?? data['profilePicture'] ?? data['image'];
             _rating = (data['rating'] ?? data['score'] ?? 0.0).toDouble();
             _profileData = data; // Store full profile data
@@ -896,18 +909,27 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFF5D2B3), width: 2),
-                  color: const Color(0xFFFFFAF5),
-                ),
-                child: Image.asset(
-                  'assets/user.png',
-                  width: 24,
-                  height: 24,
+              GestureDetector(
+                onTap: () {
+                  // Navigate to profile screen or show profile details
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => AgentProfileDetail(profileData: _profileData)),
+                  );
+                },
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFF5D2B3), width: 2),
+                    color: const Color(0xFFFFFAF5),
+                  ),
+                  child: Image.asset(
+                    'assets/user.png',
+                    width: 24,
+                    height: 24,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -926,7 +948,9 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'ID: ${_userName == null ? 'AGT_9921' : 'AGT_9921'}',
+                      _userName?.trim().isNotEmpty == true
+                          ? _userName!.trim()
+                          : 'AGT_9921',
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF8E93A3),

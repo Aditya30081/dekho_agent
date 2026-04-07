@@ -81,10 +81,6 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
         }
       }
     }
-    
-    print('PROFILE DATA: Form populated with profile data');
-    print('   Name: ${_nameController.text}');
-    print('   Email: ${_emailController.text}');
   }
 
   @override
@@ -177,6 +173,7 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
         final responseData = jsonDecode(response.body);
         print('UPDATE PROFILE Response Data: $responseData');
         if (responseData['success'] == true || response.statusCode == 200) {
+          await prefs.setString('agentName', _nameController.text.trim());
           _showSuccess('Profile updated successfully!');
           // Navigator.of(context).pop();
           Navigator.push(context, MaterialPageRoute(builder: (_) => CreateInfluencerLink()));
