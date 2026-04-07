@@ -18,7 +18,12 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   final TextEditingController _urlController = TextEditingController();
   bool _isLoading = true;
   bool _isProfileLoading = true;
+  bool _isStatsLoading = true;
   int _selectedTabIndex = 0;
+  final List<String> _tabTypes = ['today', 'weekly', 'monthly', 'overall'];
+  String _selectedType = 'today';
+  Map<String, dynamic> _combinedData = {};
+  List<Map<String, dynamic>> _segregatedData = [];
   
   // Profile data
   String? _userName;
@@ -29,8 +34,11 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   @override
   void initState() {
     super.initState();
+    _selectedTabIndex = 0;
+    _selectedType = 'today';
     _loadProfile();
     _loadInfluencerLink();
+    _loadAgentStats();
   }
 
   Future<void> _loadProfile() async {
@@ -96,6 +104,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
     }
   }
 
+  /* for testing url = https://dashboardtest.thedekhoapp.com/invite-influencer?invite=userId */
   Future<void> _loadInfluencerLink() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -121,6 +130,91 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
       });
       _showError('Error loading user ID: $e');
     }
+  }
+
+  Future<void> _loadAgentStats() async {
+    try {
+      setState(() {
+        _isStatsLoading = true;
+        _combinedData = {};
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final sessionToken = prefs.getString('sessionToken');
+
+      if (sessionToken == null || sessionToken.isEmpty) {
+        setState(() {
+          _isStatsLoading = false;
+        });
+        _showError('Session expired. Please login again.');
+        return;
+      }
+
+      final selectedType = _selectedType;
+      final response = await http.post(
+        Uri.parse('https://p2p-backend.unibots.in/api/agent/stats'),
+        headers: {
+          'Authorization': 'Bearer $sessionToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(<String, dynamic>{'type': selectedType}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        if (responseData['success'] == true) {
+          final combined =
+              (responseData['combinedData'] as Map<String, dynamic>?) ?? {};
+          final segregatedRaw = responseData['segregatedData'] as List<dynamic>? ?? [];
+
+          setState(() {
+            _combinedData = combined;
+            _segregatedData = segregatedRaw
+                .whereType<Map>()
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList();
+            _isStatsLoading = false;
+          });
+        } else {
+          setState(() {
+            _isStatsLoading = false;
+          });
+          _showError('Unable to load stats');
+        }
+      } else {
+        setState(() {
+          _isStatsLoading = false;
+        });
+        _showError('Stats API failed (${response.statusCode})');
+      }
+    } catch (e) {
+      setState(() {
+        _isStatsLoading = false;
+      });
+      _showError('Error loading stats: $e');
+    }
+  }
+
+  Future<void> _refreshDashboardData() async {
+    await Future.wait([
+      _loadProfile(),
+      _loadInfluencerLink(),
+      _loadAgentStats(),
+    ]);
+  }
+
+  String _formatNumber(num value) {
+    final intValue = value.toInt();
+    final str = intValue.toString();
+    final reg = RegExp(r'\B(?=(\d{3})+(?!\d))');
+    return str.replaceAllMapped(reg, (match) => ',');
+  }
+
+  num _numFromCombined(String key) {
+    final value = _combinedData[key];
+    if (value is num) return value;
+    if (value is String) return num.tryParse(value) ?? 0;
+    return 0;
   }
 
   @override
@@ -184,40 +278,78 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
 
             /// 🔽 SCROLLABLE PART
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildOnboardCreatorsCard(),
-                    const SizedBox(height: 16),
-                    _buildQuickStats(),
-                    const SizedBox(height: 18),
-                    _buildSectionTitle('Creator Details'),
-                    const SizedBox(height: 10),
+              child: RefreshIndicator(
+                color: AppColors.orange,
+                onRefresh: _refreshDashboardData,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildOnboardCreatorsCard(),
+                      const SizedBox(height: 16),
+                      _buildQuickStats(),
+                      const SizedBox(height: 18),
+                      _buildSectionTitle('Creator Details'),
+                      const SizedBox(height: 10),
 
-                    _buildCreatorCard(
-                      name: 'Anjali Gupta',
-                      creatorId: 'INF_77192',
-                      phone: '+9188990 01122',
-                      callTime: '180 Mins',
-                      earned: '12,000',
-                      yourShare: '1,200',
-                      isOnline: false,
-                    ),
-                    const SizedBox(height: 12),
+                      if (_isStatsLoading)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (_segregatedData.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: Text(
+                              'No creator data available',
+                              style: TextStyle(
+                                color: Color(0xFF8A8D97),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        ...List.generate(_segregatedData.length, (index) {
+                          final item = _segregatedData[index];
+                          final name = (item['influencerName'] ?? 'Creator').toString();
+                          final id = (item['influencerId'] ?? '-').toString();
+                          final phone = (item['mobileNumber'] ?? '-').toString();
+                          final callMinutes = _formatNumber(
+                            (item['totalCallMinutes'] is num)
+                                ? item['totalCallMinutes'] as num
+                                : num.tryParse('${item['totalCallMinutes']}') ?? 0,
+                          );
+                          final influencerRevenue = _formatNumber(
+                            (item['influencerRevenue'] is num)
+                                ? item['influencerRevenue'] as num
+                                : num.tryParse('${item['influencerRevenue']}') ?? 0,
+                          );
+                          final commission = _formatNumber(
+                            (item['influencerAgentCommission'] is num)
+                                ? item['influencerAgentCommission'] as num
+                                : num.tryParse('${item['influencerAgentCommission']}') ?? 0,
+                          );
 
-                    _buildCreatorCard(
-                      name: 'Riya Singh',
-                      creatorId: 'INF_55910',
-                      phone: '+9199987 78655',
-                      callTime: '240 Mins',
-                      earned: '19,400',
-                      yourShare: '2,100',
-                      isOnline: false,
-                      isNew: true,
-                    ),
-                  ],
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: index == _segregatedData.length - 1 ? 0 : 12),
+                            child: _buildCreatorCard(
+                              name: name,
+                              creatorId: id,
+                              phone: phone,
+                              callTime: '$callMinutes Mins',
+                              earned: influencerRevenue,
+                              yourShare: commission,
+                              isOnline: false,
+                              isNew: false,
+                            ),
+                          );
+                        }),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -239,7 +371,13 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
           final isSelected = _selectedTabIndex == index;
           return Expanded(
             child: InkWell(
-              onTap: () => setState(() => _selectedTabIndex = index),
+              onTap: () {
+                setState(() {
+                  _selectedTabIndex = index;
+                  _selectedType = _tabTypes[index];
+                });
+                _loadAgentStats();
+              },
               borderRadius: BorderRadius.circular(10),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 10),
@@ -304,8 +442,9 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                   color: Colors.white.withValues(alpha: 0.22),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Text(
-                  'Today',
+                child: Text(
+                  _tabTypes[_selectedTabIndex][0].toUpperCase() +
+                      _tabTypes[_selectedTabIndex].substring(1),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -316,13 +455,15 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
             ],
           ),
           const SizedBox(height: 10),
-          const Row(
+          Row(
             children: [
-              Icon(Icons.diamond, color: Color(0xFFFFD457), size: 28),
-              SizedBox(width: 8),
+              const Icon(Icons.diamond, color: Color(0xFFFFD457), size: 28),
+              const SizedBox(width: 8),
               Text(
-                '4,500',
-                style: TextStyle(
+                _isStatsLoading
+                    ? '...'
+                    : _formatNumber(_numFromCombined('totalCommission')),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 54,
                   height: 1,
@@ -332,9 +473,11 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Eligible Withdrawal : 1000 ',
-            style: TextStyle(
+          Text(
+            _isStatsLoading
+                ? 'Eligible Withdrawal : ...'
+                : 'Eligible Withdrawal : ${_formatNumber(_numFromCombined('eligibleWithdrawal'))}',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -484,31 +627,37 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
         _buildSectionTitle('Quick Stats'),
         const SizedBox(height: 10),
         Row(
-          children: const [
+          children: [
             Expanded(
               child: _StatCard(
                 icon: 'assets/creators.png',
-                iconColor: Color(0xFF5B84F1),
+                iconColor: const Color(0xFF5B84F1),
                 title: 'Total Creators',
-                value: '24',
+                value: _isStatsLoading
+                    ? '...'
+                    : _formatNumber(_numFromCombined('totalCreators')),
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Expanded(
               child: _StatCard(
                 icon: 'assets/time.png',
-                iconColor: Color(0xFF11AF65),
+                iconColor: const Color(0xFF11AF65),
                 title: 'Call Minutes',
-                value: '1,420',
+                value: _isStatsLoading
+                    ? '...'
+                    : _formatNumber(_numFromCombined('totalCallMinutesByInfluencers')),
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Expanded(
               child: _StatCard(
                 icon: 'assets/gifts.png',
-                iconColor: Color(0xFFE66FA5),
+                iconColor: const Color(0xFFE66FA5),
                 title: 'Gifts Received',
-                value: '845',
+                value: _isStatsLoading
+                    ? '...'
+                    : _formatNumber(_numFromCombined('totalGiftsRecievedByInfluencers')),
               ),
             ),
           ],
@@ -631,9 +780,9 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
           _horizontalDivider(),
           Row(
             children: [
-              Expanded(child: _metricCell('CALL TIME', callTime)),
+              Expanded(child: _metricCell('CALL TIME', callTime, false)),
               _verticalDivider(),
-              Expanded(child: _metricCell('CREATOR EARNED', earned)),
+              Expanded(child: _metricCell('CREATOR EARNED', earned, true)),
               _verticalDivider(),
               Expanded(
                 child: Padding(
@@ -646,7 +795,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                     ),
                     child: _metricCell(
                       'YOUR SHARE',
-                      '+$yourShare',
+                      '+$yourShare', true,
                       valueColor: const Color(0xFFE78824),
                       titleColor: const Color(0xFFE78824),
                     ),
@@ -662,7 +811,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
 
   Widget _metricCell(
     String title,
-    String value, {
+    String value, bool  isIcon, {
     Color titleColor = const Color(0xFFA1A5B1),
     Color valueColor = const Color(0xFF1F2840),
   }) {
@@ -677,13 +826,21 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: valueColor,
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: valueColor,
+              ),
+            ),
+            const SizedBox(width: 4),
+            if(isIcon)
+            Icon(Icons.diamond, color: Color(0xFFFFD457), size: 18),
+          ],
         ),
       ],
     );
@@ -777,6 +934,23 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                       ),
                     ),
                   ],
+                ),
+              ),
+              GestureDetector(
+                onTap: _refreshDashboardData,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF5F6FA),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child:  Image.asset(
+                    'assets/refresh.png',
+                    width: 18,
+                    height: 18,
+                    color: AppColors.primaryColor,
+                  ),
                 ),
               ),
             ],

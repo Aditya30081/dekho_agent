@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
-                        color: AppColors.selectedColor,
+                        color: AppColors.primaryColor,
                         // gradient: LinearGradient(
                         //     colors: context.appColors.gradientButton,
                         //     begin: Alignment.topCenter,
