@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants/AppColors.dart';
 import '../utils/DeviceUtils.dart';
+import '../utils/force_update_helper.dart';
 import '../config/api_endpoints.dart';
 
 class VerificationCodeScreen extends StatefulWidget {
@@ -129,6 +130,9 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, data)) {
+          return;
+        }
         String otpDetails = data['otpDetails'] ?? '';
         setState(() {
           _otpDetails = otpDetails;
@@ -155,6 +159,9 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
         print('RESEND OTP API Error - Status Code: ${response.statusCode}');
         try {
           final errorData = jsonDecode(response.body);
+          if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, errorData)) {
+            return;
+          }
           print('RESEND OTP API Error Response: $errorData');
         } catch (e) {
           print('RESEND OTP API Error parsing response: $e');
@@ -266,6 +273,9 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
       
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
+        if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, responseData)) {
+          return;
+        }
         print('VERIFY OTP Response Data: $responseData');
         print('📋 VERIFY OTP Response Structure Check:');
         print('   - responseData keys: ${responseData.keys}');
@@ -451,6 +461,9 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
       } else {
         print('VERIFY OTP API Error - Status Code: ${response.statusCode}');
         final errorData = jsonDecode(response.body);
+        if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, errorData)) {
+          return;
+        }
         print('VERIFY OTP API Error Response: $errorData');
         final errorMessage = errorData['message'] ?? 'OTP Verification Failed';
         

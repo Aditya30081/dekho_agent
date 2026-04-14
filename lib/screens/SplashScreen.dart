@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/AppColors.dart';
 import '../config/api_endpoints.dart';
 import '../utils/DeviceUtils.dart';
+import '../utils/force_update_helper.dart';
 import 'CreateInfluencerLink.dart';
 import 'LoginScreen.dart';
 import 'AgentProfileDetail.dart';
@@ -94,6 +95,10 @@ class _SplashScreenState extends State<SplashScreen> {
           print('✅ JWT VERIFICATION: Response parsed successfully');
           print('   Parsed Response Data:');
           print('   ${const JsonEncoder.withIndent('     ').convert(responseData)}');
+
+          if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, responseData)) {
+            return;
+          }
           
           // Check if response indicates success
           final isSuccess = responseData['success'] == true || response.statusCode == 200;
@@ -146,6 +151,9 @@ class _SplashScreenState extends State<SplashScreen> {
           final errorData = jsonDecode(response.body);
           print('   Error Response Data:');
           print('   ${const JsonEncoder.withIndent('     ').convert(errorData)}');
+          if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, errorData)) {
+            return;
+          }
           if (errorData['message'] != null) {
             print('   Error Message: ${errorData['message']}');
           }

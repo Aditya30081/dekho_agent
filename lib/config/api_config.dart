@@ -7,6 +7,14 @@ class ApiConfig {
   static const String _devBaseUrl = 'https://p2p-backend.unibots.in';
   static const String _prodBaseUrl = 'https://backend.thedekhoapp.com';
 
+  // Apk download URLs and file names for different environments
+  static const String _devApkDownloadUrl =
+      'https://p2pbackend.b-cdn.net/apk/agent/Master_Dekho_Agent_dev.apk';
+  static const String _prodApkDownloadUrl =
+      'https://p2pbackend.b-cdn.net/apk/agent/Master_Dekho_Agent.apk';
+  static const String _devApkFileName = 'Master_Dekho_Agent_dev.apk';
+  static const String _prodApkFileName = 'Master_Dekho_Agent.apk';
+
 
   /// Get the current base URL based on environment
   static String get baseUrl {
@@ -36,6 +44,26 @@ class ApiConfig {
 
   /// Check if current environment is development
   static bool get isDevelopment => _currentEnvironment == Environment.dev;
+
+  /// Get APK download URL based on selected environment
+  static String get apkDownloadUrl {
+    switch (_currentEnvironment) {
+      case Environment.dev:
+        return _devApkDownloadUrl;
+      case Environment.prod:
+        return _prodApkDownloadUrl;
+    }
+  }
+
+  /// Get APK file name based on selected environment
+  static String get apkFileName {
+    switch (_currentEnvironment) {
+      case Environment.dev:
+        return _devApkFileName;
+      case Environment.prod:
+        return _prodApkFileName;
+    }
+  }
 }
 
 /// Environment enum

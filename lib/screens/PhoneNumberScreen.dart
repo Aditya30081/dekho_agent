@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import '../config/api_endpoints.dart';
 import '../constants/AppColors.dart';
 import '../utils/DeviceUtils.dart';
+import '../utils/force_update_helper.dart';
 import 'VerificationCodeScreen.dart';
 
 class PhoneNumberScreen extends StatefulWidget {
@@ -431,6 +432,9 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
       if (response.statusCode == 200) {
         message = 'OTP sent successfully';
         final data = jsonDecode(response.body);
+        if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, data)) {
+          return;
+        }
         String otpDetails = data['otpDetails'] ?? '';
         print('SEND OTP Response Data: $data');
         // final existingUser = data['existingUser'];
@@ -463,6 +467,9 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
         try {
           final responseBody = jsonDecode(response.body);
           print('SEND OTP API Error Response: $responseBody');
+          if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, responseBody)) {
+            return;
+          }
           final errorCode = responseBody['code'];
           final errorMessage = responseBody['message'] ?? 'Failed to send OTP';
 
