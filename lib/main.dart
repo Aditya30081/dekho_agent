@@ -1,5 +1,6 @@
 import 'package:dekho_agent/screens/SplashScreen.dart';
 import 'package:flutter/material.dart';
+import 'app_navigator_key.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,6 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Dekho Agent',
+      navigatorKey: appNavigatorKey,
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );

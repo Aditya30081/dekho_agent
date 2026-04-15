@@ -6,6 +6,7 @@ import '../constants/AppColors.dart';
 import '../config/api_endpoints.dart';
 import '../utils/DeviceUtils.dart';
 import '../utils/force_update_helper.dart';
+import '../utils/maintenance_mode_helper.dart';
 import 'CreateInfluencerLink.dart';
 import 'LoginScreen.dart';
 import 'AgentProfileDetail.dart';
@@ -96,6 +97,13 @@ class _SplashScreenState extends State<SplashScreen> {
           print('   Parsed Response Data:');
           print('   ${const JsonEncoder.withIndent('     ').convert(responseData)}');
 
+          if (responseIndicatesMaintenance(responseData)) {
+            await showMaintenanceModeBlockingDialog(
+              context,
+              onRetry: _checkSessionAndNavigate,
+            );
+            return;
+          }
           if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, responseData)) {
             return;
           }
@@ -151,6 +159,13 @@ class _SplashScreenState extends State<SplashScreen> {
           final errorData = jsonDecode(response.body);
           print('   Error Response Data:');
           print('   ${const JsonEncoder.withIndent('     ').convert(errorData)}');
+          if (responseIndicatesMaintenance(errorData)) {
+            await showMaintenanceModeBlockingDialog(
+              context,
+              onRetry: _checkSessionAndNavigate,
+            );
+            return;
+          }
           if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, errorData)) {
             return;
           }

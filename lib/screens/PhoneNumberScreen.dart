@@ -9,6 +9,7 @@ import '../config/api_endpoints.dart';
 import '../constants/AppColors.dart';
 import '../utils/DeviceUtils.dart';
 import '../utils/force_update_helper.dart';
+import '../utils/maintenance_mode_helper.dart';
 import 'VerificationCodeScreen.dart';
 
 class PhoneNumberScreen extends StatefulWidget {
@@ -432,6 +433,13 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
       if (response.statusCode == 200) {
         message = 'OTP sent successfully';
         final data = jsonDecode(response.body);
+        if (responseIndicatesMaintenance(data)) {
+          await showMaintenanceModeBlockingDialog(
+            context,
+            onRetry: () => _sendOtp(context),
+          );
+          return;
+        }
         if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, data)) {
           return;
         }
@@ -467,6 +475,13 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
         try {
           final responseBody = jsonDecode(response.body);
           print('SEND OTP API Error Response: $responseBody');
+          if (responseIndicatesMaintenance(responseBody)) {
+            await showMaintenanceModeBlockingDialog(
+              context,
+              onRetry: () => _sendOtp(context),
+            );
+            return;
+          }
           if (ForceUpdateHelper.maybeShowForceUpdateDialog(context, responseBody)) {
             return;
           }

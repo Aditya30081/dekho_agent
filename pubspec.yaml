@@ -94,6 +94,7 @@ flutter:
     - assets/wallet.png
     - assets/call.png
     - assets/refresh.png
+    - assets/maintenanceIcon.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
