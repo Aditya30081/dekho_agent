@@ -99,6 +99,11 @@ flutter:
     - assets/icon.png
     - assets/tick.png
     - assets/contract.png
+    - assets/setting.png
+    - assets/image.png
+    - assets/fire.png
+    - assets/star.png
+    - assets/download.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

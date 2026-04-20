@@ -7,6 +7,7 @@ import '../config/api_endpoints.dart';
 import '../utils/DeviceUtils.dart';
 import '../utils/force_update_helper.dart';
 import '../utils/maintenance_mode_helper.dart';
+import '../widgets/consentDialog.dart';
 import 'CreateInfluencerLink.dart';
 import 'LoginScreen.dart';
 import 'AgentProfileDetail.dart';
@@ -19,6 +20,16 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  bool _toBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      return normalized == 'true' || normalized == '1' || normalized == 'yes';
+    }
+    return false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -117,9 +128,25 @@ class _SplashScreenState extends State<SplashScreen> {
             // Extract profileCompleted from response
             final data = responseData['data'] ?? responseData;
             final profileCompleted = data['profileCompleted'] ?? responseData['profileCompleted'] ?? false;
+            final consentAccepted = _toBool(
+              data['consentAccepted'] ?? responseData['consentAccepted'],
+            );
             
             print('✅ JWT VERIFICATION: Session is valid');
             print('   Profile Completed: $profileCompleted');
+            print('   Consent Accepted: $consentAccepted');
+
+            if (!consentAccepted) {
+              final sessionTokenForDialog =
+                  data['sessionToken'] ?? responseData['sessionToken'] ?? sessionToken;
+              final agreementAccepted = await consentDialog.show(
+                context,
+                sessionToken: sessionTokenForDialog?.toString(),
+              );
+              if (!agreementAccepted || !mounted) {
+                return;
+              }
+            }
             
             if (profileCompleted == true) {
               print('   → Navigating to CreateInfluencerLink (profile completed)');

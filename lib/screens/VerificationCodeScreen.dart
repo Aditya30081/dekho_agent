@@ -87,6 +87,16 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
     return _otpControllers.map((controller) => controller.text).join();
   }
 
+  bool _toBool(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      return normalized == 'true' || normalized == '1' || normalized == 'yes';
+    }
+    return false;
+  }
+
   void _clearOtpFields() {
     if (!mounted) return;
     for (var controller in _otpControllers) {
@@ -320,11 +330,15 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
         final profileCompleted = responseData['data']?['profileCompleted'] ?? 
                                 responseData['profileCompleted'] ?? 
                                 false;
+        final consentAcceptedRaw = responseData['data']?['consentAccepted'] ??
+            responseData['consentAccepted'];
+        final consentAccepted = _toBool(consentAcceptedRaw);
         
         print('🔑 Extracted sessionToken: ${sessionToken != null ? "Found (${sessionToken.length} chars)" : "NULL"}');
         print('👤 Extracted userId: ${userId ?? "NULL"}');
         print('📝 Extracted userName: ${userName ?? "NULL"}');
         print('✅ Extracted profileCompleted: $profileCompleted');
+        print('🧾 Extracted consentAccepted: $consentAccepted');
         // final userGender = responseData['data']?['user']?['gender'];
         // final userRole = responseData['data']?['user']?['role'];
         // final chatUserName = responseData['data']?['agora']?['chatUserName'] ?? '';
@@ -464,12 +478,14 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
           fontSize: 16.0,
         );
 
-        final agreementAccepted = await consentDialog.show(
-          context,
-          sessionToken: sessionToken?.toString(),
-        );
-        if (!agreementAccepted || !mounted) {
-          return;
+        if (!consentAccepted) {
+          final agreementAccepted = await consentDialog.show(
+            context,
+            sessionToken: sessionToken?.toString(),
+          );
+          if (!agreementAccepted || !mounted) {
+            return;
+          }
         }
 
         // Navigate based on profileCompleted from API response

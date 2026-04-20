@@ -905,6 +905,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   }
 
   PreferredSizeWidget _buildDashboardAppBar() {
+    print('Building Dashboard AppBar with userName: $_userName');
     return PreferredSize(
       preferredSize: const Size.fromHeight(96),
       child: Container(

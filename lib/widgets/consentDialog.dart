@@ -81,8 +81,7 @@ class _consentDialogState extends State<consentDialog> {
 
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       final html = data['agreement']?.toString() ?? '';
-      _agreementVersion =
-          data['policyVersion']?.toString() ?? data['agreementVersion']?.toString();
+      _agreementVersion = data['version']?.toString();
 
       if (html.isEmpty) {
         _showError('Agreement content is empty');

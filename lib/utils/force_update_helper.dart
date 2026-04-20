@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:apk_sideload/install_apk.dart';
+import 'package:dekho_agent/constants/AppColors.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -32,6 +34,7 @@ class ForceUpdateHelper {
     }
 
     _isDialogVisible = true;
+    final luckyNumber = '${math.Random().nextInt(99) + 1}';
 
     showDialog<void>(
       context: context,
@@ -43,128 +46,190 @@ class ForceUpdateHelper {
           canPop: false,
           child: StatefulBuilder(
             builder: (context, setDialogState) {
-              return AlertDialog(
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                contentPadding: const EdgeInsets.fromLTRB(22, 18, 22, 20),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-
-                    Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFFFFF4E6),
-                        border: Border.all(color: const Color(0xFFF8E8D0)),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.settings,
-                          size: 40,
-                          color: Color(0xFFE67E22),
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  width: double.infinity,
+                  height: MediaQuery.of(context).size.height * 0.85,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    border: Border.all(color: const Color(0xFFE64A8A), width: 2),
+                  ),
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: 14,
+                        top: 250,
+                        child: Image.asset(
+                          'assets/fire.png',
+                          width: 54,
+                          height: 54,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.local_fire_department, color: Color(0xFFFF7B18), size: 44),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      "We'll be back!",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF0E1633),
-                        fontFamily: 'Inter',
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // const Text(
-                    //   'Girls are waiting for you! 😍',
-                    //   textAlign: TextAlign.center,
-                    //   style: TextStyle(
-                    //     fontSize: 18,
-                    //     fontWeight: FontWeight.w700,
-                    //     color: Color(0xFFE57B0F),
-                    //     fontFamily: 'Inter',
-                    //   ),
-                    // ),
-                    // const SizedBox(height: 8),
-                    const Text(
-                      'Please update the app to continue connecting and video calling without interruptions.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 1.35,
-                        color: Color(0xFF5E6678),
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Inter',
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 54,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFE98709), Color(0xFFE14C45)],
-                          ),
-                          borderRadius: BorderRadius.circular(18),
+                      Positioned(
+                        right: 22,
+                        top: 210,
+                        child: Image.asset(
+                          'assets/star.png',
+                          width: 48,
+                          height: 48,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.auto_awesome, color: AppColors.primaryColor, size: 40),
                         ),
-                        child: ElevatedButton.icon(
-                          onPressed: isDownloading
-                              ? null
-                              : () async {
-                                  setDialogState(() {
-                                    isDownloading = true;
-                                  });
-
-                                  await _downloadAndInstallApk(dialogContext);
-
-                                  if (dialogContext.mounted) {
-                                    setDialogState(() {
-                                      isDownloading = false;
-                                    });
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            foregroundColor: Colors.white,
-                            disabledBackgroundColor: Colors.transparent,
-                            disabledForegroundColor: Colors.white,
-                            elevation: 0,
-                            shadowColor: Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
+                      ),
+                      Positioned(
+                        right: 64,
+                        top: 420,
+                        child: Image.asset(
+                          'assets/fire.png',
+                          width: 54,
+                          height: 54,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.local_fire_department, color: Color(0xFFFF7B18), size: 44),
+                        ),
+                      ),
+                      Positioned(
+                        left: 52,
+                        bottom: 160,
+                        child: Image.asset(
+                          'assets/fire.png',
+                          width: 54,
+                          height: 54,
+                          errorBuilder: (_, __, ___) =>
+                              const Icon(Icons.local_fire_department, color: Color(0xFFFF7B18), size: 44),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 22),
+                        child: Column(
+                          children: [
+                            Expanded(
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Image.asset(
+                                      'assets/image.png',
+                                      width: double.infinity,
+                                      height: MediaQuery.of(context).size.height * 0.25,
+                                      fit: BoxFit.contain,
+                                    ),
+                                    // const SizedBox(height: 24),
+                                    // _DashedNumberCircle(number: luckyNumber),
+                                    // const SizedBox(height: 20),
+                                    SizedBox(
+                                      width: double.infinity,
+                                      height: MediaQuery.of(context).size.height * 0.3, // Adjust the multiplier as needed
+                                      child: Center(
+                                        child: RichText(
+                                          textAlign: TextAlign.center,
+                                          text: const TextSpan(
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black,
+                                            ),
+                                            children: [
+                                              TextSpan(text: 'We’ve improved your\nexperience! '),
+                                              TextSpan(
+                                                text: 'Update Now',
+                                                style: TextStyle(
+                                                  color: Color(0xFFF76F1A),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
-                          ),
-                          icon: isDownloading
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
+                            const SizedBox(height: 12),
+                            const Text(
+                              'New version is available now!',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.5,
+                              height: MediaQuery.of(context).size.height * 0.06,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(36),
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFFF7B18), Color(0xFFFF3D3B)],
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Color(0x40FF6A00),
+                                      blurRadius: 18,
+                                      offset: Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: TextButton.icon(
+                                  onPressed: isDownloading
+                                      ? null
+                                      : () async {
+                                          setDialogState(() {
+                                            isDownloading = true;
+                                          });
+
+                                          await _downloadAndInstallApk(dialogContext);
+
+                                          if (dialogContext.mounted) {
+                                            setDialogState(() {
+                                              isDownloading = false;
+                                            });
+                                          }
+                                        },
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(36),
                                     ),
                                   ),
-                                )
-                              : const Icon(Icons.download_rounded, size: 22),
-                          label: Text(
-                            isDownloading ? 'Downloading...' : 'Update Now',
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'Inter',
+                                  icon: isDownloading
+                                      ? const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(Colors.white),
+                                          ),
+                                        )
+                                      : Image.asset('assets/download.png', width: 20, height: 20, color: Colors.white, errorBuilder: (_, __, ___) => const Icon(Icons.download_rounded, size: 20, color: Colors.white)),
+                                  label: Text(
+                                    isDownloading ? 'DOWNLOADING...' : 'UPDATE NOW!',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                      letterSpacing: 0.4,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               );
             },
@@ -199,5 +264,90 @@ class ForceUpdateHelper {
         ),
       );
     }
+  }
+}
+
+class _DashedNumberCircle extends StatelessWidget {
+  final String number;
+
+  const _DashedNumberCircle({required this.number});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 160,
+      height: 160,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CustomPaint(
+            size: const Size(196, 196),
+            painter: _DashedCirclePainter(
+              color: const Color(0xFFF05572),
+              strokeWidth: 5,
+              dashWidth: 8,
+              dashSpace: 12,
+            ),
+          ),
+          Text(
+            number,
+            style: const TextStyle(
+              fontSize: 78,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 4,
+              color: Color(0xFFFF7A18),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashedCirclePainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double dashWidth;
+  final double dashSpace;
+
+  const _DashedCirclePainter({
+    required this.color,
+    required this.strokeWidth,
+    required this.dashWidth,
+    required this.dashSpace,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    final radius = (size.width / 2) - strokeWidth;
+    final center = Offset(size.width / 2, size.height / 2);
+    final circumference = 2 * math.pi * radius;
+    final dashCount = (circumference / (dashWidth + dashSpace)).floor();
+    final sweep = (2 * math.pi) / dashCount;
+    final dashSweep = sweep * (dashWidth / (dashWidth + dashSpace));
+
+    for (int i = 0; i < dashCount; i++) {
+      final start = i * sweep;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        start,
+        dashSweep,
+        false,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedCirclePainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.dashWidth != dashWidth ||
+        oldDelegate.dashSpace != dashSpace;
   }
 }
