@@ -143,7 +143,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
                         ),
                       ),
                       // Orange wallet icon in center
-                Image.asset('assets/wallet.png', width: 60, height: 60),
+                Image.asset('assets/wallet.png', width: 60, height: 60, color: AppColors.primaryColor,),
                       // Green circle - top right
                       Positioned(
                         top: 0,
@@ -184,7 +184,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: Text(
-                      "Link your phone number to save your live stream history, gifts and payout details permanently",
+                      "Link your phone number to check your agents details",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,

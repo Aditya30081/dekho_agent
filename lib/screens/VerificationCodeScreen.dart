@@ -14,6 +14,7 @@ import '../utils/DeviceUtils.dart';
 import '../utils/force_update_helper.dart';
 import '../utils/maintenance_mode_helper.dart';
 import '../config/api_endpoints.dart';
+import '../widgets/consentDialog.dart';
 
 class VerificationCodeScreen extends StatefulWidget {
   final String phoneNumber;
@@ -463,9 +464,17 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
           fontSize: 16.0,
         );
 
+        final agreementAccepted = await consentDialog.show(
+          context,
+          sessionToken: sessionToken?.toString(),
+        );
+        if (!agreementAccepted || !mounted) {
+          return;
+        }
+
         // Navigate based on profileCompleted from API response
         print('🔍 Navigation Decision: profileCompleted = $profileCompleted');
-        
+
         if (profileCompleted == true) {
           print('✅ Profile is completed → Navigating to CreateInfluencerLink');
           Navigator.pushReplacement(

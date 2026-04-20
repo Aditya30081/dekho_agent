@@ -7,6 +7,7 @@ class ApiEndpoints {
   static const String sendOtp = '/auth/send-otp';
   static const String verifyOtp = '/auth/verify-otp';
   static const String sessionLogin = '/auth/session-login';
+  static const String agreement = '/api/v1/agreement';
 
   // Agent endpoints
   static const String updateProfile = '/api/agent/updateProfile';
@@ -15,6 +16,7 @@ class ApiEndpoints {
   // External URLs (terms, privacy policy, etc.)
   static const String termsOfUse = '/terms/';
   static const String privacyPolicy = '/privacy-policy/';
+  static const String statsDashboard = '/api/agent/stats';
 
   /// Get full URL for an API endpoint
   static String getApiUrl(String endpoint) {
@@ -30,9 +32,11 @@ class ApiEndpoints {
   static String get sendOtpUrl => getApiUrl(sendOtp);
   static String get verifyOtpUrl => getApiUrl(verifyOtp);
   static String get sessionLoginUrl => getApiUrl(sessionLogin);
+  static String get agreementUrl => getApiUrl(agreement);
   static String get updateProfileUrl => getApiUrl(updateProfile);
   static String get getProfileUrl => getApiUrl(getProfile);
   static String get termsOfUseUrl => getExternalUrl(termsOfUse);
   static String get privacyPolicyUrl => getExternalUrl(privacyPolicy);
+  static String get statsURL => getExternalUrl(statsDashboard);
 }
 

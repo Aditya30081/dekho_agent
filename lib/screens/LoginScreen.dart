@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../constants/AppColors.dart';
-import '../config/api_endpoints.dart';
-
 import 'PhoneNumberScreen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,137 +10,148 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-
   @override
   void initState() {
     super.initState();
   }
+
+  Widget _buildMotif() {
+    return Image.asset(
+      'assets/icon.png',
+      width: 44,
+      height: 44,
+      fit: BoxFit.contain,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
-      backgroundColor: AppColors.textColor,
-      body: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(),
-                Column(
-                  children: [
-                     SizedBox(height: 32),
-                    Image.asset(
-                      "assets/small_logo.png",//context.appColors.selectedColor, // Replace with your icon asset path
-                      height: 80,
-                      width: 88,
-                    ),
-                    Text(
-                      'Dekho',
-                      style: TextStyle(fontSize: 70, fontWeight: FontWeight.w200,fontFamily: 'Lexend',color: AppColors.backgroundColor/*context.appColors.selectedColor*/, letterSpacing: -3.6,),
-                    ),
-                    Text(
-                      textAlign: TextAlign.center,
-                      'Magar Pyaar se',
-                      style: TextStyle(fontSize: 16,color: AppColors.backgroundColor,fontFamily: 'Lexend'),
-                    ),
-                      SizedBox(height: 32),
-
-                  ],
-                ),
-                // Spacer(),
-
-                Padding(
-                  padding: const EdgeInsets.only(top: 150.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: AppColors.primaryColor,
-                        // gradient: LinearGradient(
-                        //     colors: context.appColors.gradientButton,
-                        //     begin: Alignment.topCenter,
-                        //     end: Alignment.bottomCenter
-                        // ),
-                      ),
-                      child: ElevatedButton(
-                        onPressed: (){
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=> PhoneNumberScreen( /*existingUser: true*/)));
-                        },
-
-                        style: ElevatedButton.styleFrom(
-                          elevation: 0,
-                          backgroundColor: Colors.transparent,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Text(
-                          'Already an agent/ New Here? ',
-                          style: TextStyle(fontSize: 16,color: AppColors.textColor,fontFamily: 'Lexend'),
-                        ),
-
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 82,),
-
-                SizedBox(height: 24),
-               /* // Terms and Privacy
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16.0),
-                  child: IntrinsicHeight(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Positioned(top: 28, left: 24, child: _buildMotif()),
+            Positioned(top: 132, right: 40, child: _buildMotif()),
+            Positioned(bottom: 380, left: 24, child: _buildMotif()),
+            Positioned(bottom: 172, right: 40, child: _buildMotif()),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        TextButton(
-                          onPressed: () async {
-                            final url = Uri.parse(ApiEndpoints.termsOfUseUrl);
-                            if (await canLaunchUrl(url)) { await launchUrl(url); }
-                          },
-                          child: Text(
-                            'Terms of use',
-                            style: TextStyle(
-                              color: AppColors.backgroundColor,
-                              fontFamily: 'Lexend',
-                            ),
+                        Image.asset(
+                          'assets/small_logo.png',
+                          height: 76,
+                          width: 82,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Dekho',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.w400,
+                            fontFamily: 'Lexend',
+                            color: Colors.black,
+                            letterSpacing: -2.2,
+                            height: 0.95,
                           ),
                         ),
-
-                        Container(
-                          width: 0.1,
-                          height: 20, // ← change this to adjust line height
-                          color: AppColors.headlineTextColor,
+                        const SizedBox(height: 6),
+                        Text(
+                          'MAGAR PYAR SE',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'Lexend',
+                            letterSpacing: 1.4,
+                            color: AppColors.primaryColor.withValues(alpha: 0.75),
+                          ),
                         ),
-
-                        TextButton(
-                          onPressed: () async {
-                            final url = Uri.parse(ApiEndpoints.privacyPolicyUrl);
-                            if (await canLaunchUrl(url)) { await launchUrl(url); }
-                          },
-                          child: Text(
-                            'Privacy Policy',
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF3F3F6),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'AGENT PORTAL',
+                            textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: AppColors.backgroundColor,
+                              fontSize: 13,
+                              color: Color(0xFFA9ABB7),
+                              fontWeight: FontWeight.w500,
                               fontFamily: 'Lexend',
+                              letterSpacing: 0.7,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                SizedBox(height: 24),
-*/
-              ],
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.6, // 60% of the screen width
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PhoneNumberScreen(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: AppColors.primaryColor,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Agent Login / Sign-Up \u2192',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                                fontFamily: 'Lexend',
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        const Text(
+                          'Become Agent Today',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFFA2A6B1),
+                            fontWeight: FontWeight.w400,
+                            fontFamily: 'Lexend',
+                          ),
+                        ),
+                        const SizedBox(height: 44),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -21,13 +21,14 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   bool _isProfileLoading = true;
   bool _isStatsLoading = true;
   int _selectedTabIndex = 0;
-  final List<String> _tabTypes = ['today', 'weekly', 'monthly', 'overall'];
-  String _selectedType = 'today';
+  final List<String> _tabTypes = ['overall', 'today', 'weekly', 'monthly'];
+  String _selectedType = 'overall';
   Map<String, dynamic> _combinedData = {};
   List<Map<String, dynamic>> _segregatedData = [];
   
   // Profile data
   String? _userName;
+  String? _userId;
   String? _profileImageUrl;
   double? _rating;
   Map<String, dynamic>? _profileData;
@@ -36,7 +37,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   void initState() {
     super.initState();
     _selectedTabIndex = 0;
-    _selectedType = 'today';
+    _selectedType = 'overall';
     _loadSavedName();
     _loadProfile();
     _loadInfluencerLink();
@@ -47,9 +48,15 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedName = prefs.getString('agentName');
+      final savedUserId = prefs.getString('userId');
       if (savedName != null && savedName.trim().isNotEmpty) {
         setState(() {
           _userName = savedName.trim();
+          _userId = savedUserId;
+        });
+      } else if (savedUserId != null && savedUserId.isNotEmpty) {
+        setState(() {
+          _userId = savedUserId;
         });
       }
     } catch (_) {}
@@ -126,6 +133,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
       if (userId != null && userId.isNotEmpty) {
         final url = 'https://dashboard.thedekhoapp.com/invite-influencer?invite=$userId';
         setState(() {
+          _userId = userId;
           _urlController.text = url;
           _isLoading = false;
         });
@@ -165,7 +173,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
 
       final selectedType = _selectedType;
       final response = await http.post(
-        Uri.parse('https://p2p-backend.unibots.in/api/agent/stats'),
+        Uri.parse(ApiEndpoints.statsURL),
         headers: {
           'Authorization': 'Bearer $sessionToken',
           'Content-Type': 'application/json',
@@ -175,6 +183,8 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        // print('STATS API: Response Status: ${responseData}');
+
         if (responseData['success'] == true) {
           final combined =
               (responseData['combinedData'] as Map<String, dynamic>?) ?? {};
@@ -304,7 +314,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                       const SizedBox(height: 16),
                       _buildQuickStats(),
                       const SizedBox(height: 18),
-                      _buildSectionTitle('Creator Details'),
+                      _buildSectionTitle('Influencer Details'),
                       const SizedBox(height: 10),
 
                       if (_isStatsLoading)
@@ -372,12 +382,12 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   }
 
   Widget _buildTabs() {
-    const tabs = ['Today', 'Weekly', 'Monthly', 'Overall'];
+    const tabs = ['Overall', 'Today', 'Weekly', 'Monthly'];
     return Container(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: const Color(0xFFEFEFF3),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: List.generate(tabs.length, (index) {
@@ -393,17 +403,17 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
               },
               borderRadius: BorderRadius.circular(10),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 11),
                 decoration: BoxDecoration(
                   color: isSelected ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   tabs[index],
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
                     color: isSelected
                         ? AppColors.orange
                         : const Color(0xFF8D8F98),
@@ -420,9 +430,9 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   Widget _buildBalanceCard() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 22),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         gradient: const LinearGradient(
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
@@ -436,67 +446,52 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
             children: [
               Image.asset(
                 'assets/wallet.png',
-                width: 18,
-                height: 18,
+                width: 24,
+                height: 24,
               ),
               SizedBox(width: 8),
               const Text(
                 'Total Commission',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 21,
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.22),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  _tabTypes[_selectedTabIndex][0].toUpperCase() +
-                      _tabTypes[_selectedTabIndex].substring(1),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           Row(
             children: [
-              const Icon(Icons.diamond, color: Color(0xFFFFD457), size: 28),
-              const SizedBox(width: 8),
+              const Icon(Icons.diamond_rounded, color: Color(0xFFFFD457), size: 38),
+              const SizedBox(width: 10),
               Text(
                 _isStatsLoading
                     ? '...'
                     : _formatNumber(_numFromCombined('totalCommission')),
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 54,
+                  fontSize: 62,
                   height: 1,
                   fontWeight: FontWeight.w800,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 24),
+      /*
           Text(
             _isStatsLoading
                 ? 'Eligible Withdrawal : ...'
                 : 'Eligible Withdrawal : ${_formatNumber(_numFromCombined('eligibleWithdrawal'))}',
             style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+              color: Color(0xFFFBE6D8),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
             ),
-          ),
-          const SizedBox(height: 14),
+          ),*/
+          const SizedBox(height: 2),
           // Row(
           //   children: [
           //     Expanded(
@@ -567,64 +562,74 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFECECF1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Onboard Creators',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            inviteLink,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Color(0xFF8A8D97),
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(
-                child: InkWell(
-                  onTap: _copyToClipboard,
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFF7ED),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                       Image.asset(
-                          'assets/copy.png',
-                          width: 18,
-                          height: 18,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Copy Link',
-                          style: TextStyle(
-                            color: AppColors.orange,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Onboard Creators',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  ),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.6,
+                    child: Text(
+                      inviteLink,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF8A8A8A),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  InkWell(
+                    onTap: _copyToClipboard,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF4E8),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        children: [
+                          Image.asset(
+                            'assets/copy.png',
+                            width: 14,
+                            height: 14,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Copy Link',
+                            style: TextStyle(
+                              color: AppColors.orange,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -645,7 +650,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
               child: _StatCard(
                 icon: 'assets/creators.png',
                 iconColor: const Color(0xFF5B84F1),
-                title: 'Total Creators',
+                title: 'TOTAL\nINFLUENCERS',
                 value: _isStatsLoading
                     ? '...'
                     : _formatNumber(_numFromCombined('totalCreators')),
@@ -656,7 +661,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
               child: _StatCard(
                 icon: 'assets/time.png',
                 iconColor: const Color(0xFF11AF65),
-                title: 'Call Minutes',
+                title: 'TOTAL PAID\nCALL MINS',
                 value: _isStatsLoading
                     ? '...'
                     : _formatNumber(_numFromCombined('totalCallMinutesByInfluencers')),
@@ -667,7 +672,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
               child: _StatCard(
                 icon: 'assets/gifts.png',
                 iconColor: const Color(0xFFE66FA5),
-                title: 'Gifts Received',
+                title: 'TOTAL GIFTS\nRECEIVED',
                 value: _isStatsLoading
                     ? '...'
                     : _formatNumber(_numFromCombined('totalGiftsRecievedByInfluencers')),
@@ -721,13 +726,13 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                     ? Text(
                         name.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join(),
                         style: const TextStyle(
-                          color: Color(0xFF838795),
+                          color: Color(0xFF8A8A8A),
                           fontWeight: FontWeight.w700,
                         ),
                       )
                     : null,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -738,7 +743,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                           child: Text(
                             name,
                             style: const TextStyle(
-                              fontSize: 18,
+                              fontSize: 24,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF212A40),
                             ),
@@ -764,7 +769,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                     Text(
                       'ID: $creatorId',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 12,
                         color: Color(0xFF8A8A8A),
                         fontWeight: FontWeight.w600,
                       ),
@@ -777,7 +782,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                         Text(
                           phone,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 12,
                             color: Color(0xFF8A8A8A),
                             fontWeight: FontWeight.w600,
                           ),
@@ -793,9 +798,9 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
           _horizontalDivider(),
           Row(
             children: [
-              Expanded(child: _metricCell('CALL TIME', callTime, false)),
+              Expanded(child: _metricCell('PAID CALL MINS', callTime, false)),
               _verticalDivider(),
-              Expanded(child: _metricCell('CREATOR EARNED', earned, true)),
+              Expanded(child: _metricCell('INFLUENCER EARNING', earned, true)),
               _verticalDivider(),
               Expanded(
                 child: Padding(
@@ -807,7 +812,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: _metricCell(
-                      'YOUR SHARE',
+                      'COMMISSION',
                       '+$yourShare', true,
                       valueColor: const Color(0xFFE78824),
                       titleColor: const Color(0xFFE78824),
@@ -938,19 +943,18 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Agent Dashboard',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF152445),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
                     Text(
                       _userName?.trim().isNotEmpty == true
-                          ? _userName!.trim()
-                          : 'AGT_9921',
+                          ? _userName!.trim().toUpperCase()
+                          : 'CHETANYA',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        color: Color(0xFF252525),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      'ID : ${(_userId != null && _userId!.isNotEmpty) ? _userId : '1234578590'}',
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF8E93A3),
@@ -966,8 +970,8 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF5F6FA),
-                    borderRadius: BorderRadius.circular(10),
+                    color: const Color(0xFFFFE6C9),
+                    shape: BoxShape.circle,
                   ),
                   child:  Image.asset(
                     'assets/refresh.png',
@@ -1001,10 +1005,10 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFEDEDF2)),
       ),
       child: Column(
@@ -1026,16 +1030,17 @@ class _StatCard extends StatelessWidget {
             title,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              fontSize: 12,
+              fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF9AA0AE),
+              color: Color(0xFF8A8A8A),
+              height: 1.2,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 19,
               fontWeight: FontWeight.w700,
               color: Color(0xFF1B253E),
             ),
