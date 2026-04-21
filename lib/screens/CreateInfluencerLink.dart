@@ -801,7 +801,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
             children: [
               Expanded(child: _metricCell('PAID CALL MINS', callTime, false)),
               _verticalDivider(),
-              Expanded(child: _metricCell('INF EARNING', earned, true)),
+              Expanded(child: _metricCell('INF. EARNING', earned, true)),
               _verticalDivider(),
               Expanded(
                 child: Padding(
