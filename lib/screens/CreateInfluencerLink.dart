@@ -29,7 +29,6 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   // Profile data
   String? _userName;
   String? _userId;
-  String? _profileImageUrl;
   double? _rating;
   Map<String, dynamic>? _profileData;
   
@@ -94,18 +93,18 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
           final data = responseData['data'] ?? responseData;
           
           setState(() {
-            _profileImageUrl = data['profileImage'] ?? data['profilePicture'] ?? data['image'];
+
             _rating = (data['rating'] ?? data['score'] ?? 0.0).toDouble();
             _profileData = data; // Store full profile data
             _isProfileLoading = false;
           });
           
-          print('GET PROFILE: Profile loaded successfully');
-          print('   Name: $_userName');
-          print('   Rating: $_rating');
-          print('   Full Profile Data: $data');
+          // print('GET PROFILE: Profile loaded successfully');
+          // print('   Name: $_userName');
+          // print('   Rating: $_rating');
+          // print('   Full Profile Data: $data');
         } else {
-          print('GET PROFILE: API returned success=false');
+          // print('GET PROFILE: API returned success=false');
           setState(() {
             _isProfileLoading = false;
           });
@@ -189,7 +188,6 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
           final combined =
               (responseData['combinedData'] as Map<String, dynamic>?) ?? {};
           final segregatedRaw = responseData['segregatedData'] as List<dynamic>? ?? [];
-
           setState(() {
             _combinedData = combined;
             _segregatedData = segregatedRaw
@@ -306,7 +304,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                 onRefresh: _refreshDashboardData,
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 84),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -341,6 +339,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                           final name = (item['influencerName'] ?? 'Creator').toString();
                           final id = (item['influencerId'] ?? '-').toString();
                           final phone = (item['mobileNumber'] ?? '-').toString();
+                          final profileImage = (item['profileImage'] ?? '-').toString();
                           final callMinutes = _formatNumber(
                             (item['totalCallMinutes'] is num)
                                 ? item['totalCallMinutes'] as num
@@ -368,6 +367,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                               yourShare: commission,
                               isOnline: false,
                               isNew: false,
+                              profileImageUrl: profileImage,
                             ),
                           );
                         }),
@@ -479,7 +479,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 8),
       /*
           Text(
             _isStatsLoading
@@ -582,7 +582,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                   ),
                   const SizedBox(height: 4),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.6,
+                    width: MediaQuery.of(context).size.width * 0.59,
                     child: Text(
                       inviteLink,
                       maxLines: 2,
@@ -704,6 +704,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
     required String yourShare,
     bool isOnline = false,
     bool isNew = false,
+    required String profileImageUrl,
   }) {
     return Container(
       padding: const EdgeInsets.all(14),
@@ -719,10 +720,10 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: const Color(0xFFF2F2F5),
-                backgroundImage: _profileImageUrl != null && _profileImageUrl!.isNotEmpty
-                    ? NetworkImage(_profileImageUrl!)
+                backgroundImage: profileImageUrl.isNotEmpty
+                    ? NetworkImage(profileImageUrl)
                     : null,
-                child: _profileImageUrl == null || _profileImageUrl!.isEmpty
+                child: profileImageUrl.isEmpty
                     ? Text(
                         name.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join(),
                         style: const TextStyle(
@@ -743,7 +744,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                           child: Text(
                             name,
                             style: const TextStyle(
-                              fontSize: 24,
+                              fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: Color(0xFF212A40),
                             ),
@@ -800,7 +801,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
             children: [
               Expanded(child: _metricCell('PAID CALL MINS', callTime, false)),
               _verticalDivider(),
-              Expanded(child: _metricCell('INFLUENCER EARNING', earned, true)),
+              Expanded(child: _metricCell('INF EARNING', earned, true)),
               _verticalDivider(),
               Expanded(
                 child: Padding(
@@ -837,6 +838,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
       children: [
         Text(
           title,
+          textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -905,12 +907,12 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   }
 
   PreferredSizeWidget _buildDashboardAppBar() {
-    print('Building Dashboard AppBar with userName: $_userName');
+    // print('Building Dashboard AppBar with userName: $_userName');
     return PreferredSize(
       preferredSize: const Size.fromHeight(96),
       child: Container(
         color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
         child: SafeArea(
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -947,21 +949,21 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                     Text(
                       _userName?.trim().isNotEmpty == true
                           ? _userName!.trim().toUpperCase()
-                          : 'CHETANYA',
+                          : 'AGENT',
                       style: const TextStyle(
                         fontSize: 17,
                         color: Color(0xFF252525),
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    Text(
+                   /* Text(
                       'ID : ${(_userId != null && _userId!.isNotEmpty) ? _userId : '1234578590'}',
                       style: const TextStyle(
                         fontSize: 14,
                         color: Color(0xFF8E93A3),
                         fontWeight: FontWeight.w500,
                       ),
-                    ),
+                    ),*/
                   ],
                 ),
               ),
