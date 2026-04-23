@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_endpoints.dart';
+import '../config/api_config.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class CreateInfluencerLink extends StatefulWidget {
@@ -117,28 +118,34 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
     }
   }
 
-  /* for testing url = https://dashboardtest.thedekhoapp.com/invite-influencer?invite=userId */
+  /* for testing url = https://dashboardtest.thedekhoapp.com/invite-influencer?invite=$userId */
   Future<void> _loadInfluencerLink() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getString('userId');
+      final inviteBaseUrl = ApiConfig.environment == Environment.dev
+          ? 'https://dashboardtest.thedekhoapp.com'
+          : 'https://dashboard.thedekhoapp.com';
 
       if (userId != null && userId.isNotEmpty) {
-        final url = 'https://dashboard.thedekhoapp.com/invite-influencer?invite=$userId';
+        final url = '$inviteBaseUrl/invite-influencer?invite=$userId';
         setState(() {
           _urlController.text = url;
           _isLoading = false;
         });
       } else {
         setState(() {
-          _urlController.text = 'https://dashboard.thedekhoapp.com/invite-influencer?invite=agentid';
+          _urlController.text = '$inviteBaseUrl/invite-influencer?invite=agentid';
           _isLoading = false;
         });
         _showError('User ID not found. Please login again.');
       }
     } catch (e) {
+      final inviteBaseUrl = ApiConfig.environment == Environment.dev
+          ? 'https://dashboardtest.thedekhoapp.com'
+          : 'https://dashboard.thedekhoapp.com';
       setState(() {
-        _urlController.text = 'https://dashboard.thedekhoapp.com/invite-influencer?invite=agentid';
+        _urlController.text = '$inviteBaseUrl/invite-influencer?invite=agentid';
         _isLoading = false;
       });
       _showError('Error loading user ID: $e');
