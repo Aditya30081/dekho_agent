@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api_endpoints.dart';
 import '../config/api_config.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'LoggedOutScreen.dart';
+import '../utils/unauthorized_handler.dart';
 
 class CreateInfluencerLink extends StatefulWidget {
   const CreateInfluencerLink({super.key});
@@ -21,6 +23,7 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
   bool _isLoading = true;
   bool _isProfileLoading = true;
   bool _isStatsLoading = true;
+  bool _isLoggingOut = false;
   int _selectedTabIndex = 0;
   final List<String> _tabTypes = ['overall', 'today', 'weekly', 'monthly'];
   String _selectedType = 'overall';
@@ -86,6 +89,9 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
 
       print('GET PROFILE: Response Status: ${response.statusCode}');
       print('GET PROFILE: Response Body: ${response.body}');
+      if (await UnauthorizedHandler.handle401(context, response.statusCode)) {
+        return;
+      }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
@@ -186,6 +192,9 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
         },
         body: jsonEncode(<String, dynamic>{'type': selectedType}),
       );
+      if (await UnauthorizedHandler.handle401(context, response.statusCode)) {
+        return;
+      }
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
@@ -279,6 +288,184 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
       gravity: ToastGravity.BOTTOM,
       backgroundColor: Colors.green,
       textColor: Colors.white,
+    );
+  }
+
+  Future<void> _logout() async {
+    if (_isLoggingOut) return;
+
+    setState(() {
+      _isLoggingOut = true;
+    });
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final sessionToken = prefs.getString('sessionToken');
+
+      if (sessionToken == null || sessionToken.trim().isEmpty) {
+        _showError('Session token not found. Please login again.');
+        return;
+      }
+
+      final Map<String, dynamic> logoutRequestBody = <String, dynamic>{};
+      print('LOGOUT REQUEST URL: ${ApiEndpoints.logoutUrl}');
+      print('LOGOUT REQUEST HEADERS: {Authorization: Bearer ${sessionToken.trim()}}');
+      print('LOGOUT REQUEST BODY: ${jsonEncode(logoutRequestBody)}');
+
+      final response = await http.post(
+        Uri.parse(ApiEndpoints.logoutUrl),
+        headers: {
+          'Authorization': 'Bearer ${sessionToken.trim()}',
+        },
+        body: jsonEncode(logoutRequestBody),
+      );
+
+      print('LOGOUT RAW RESPONSE STATUS: ${response.statusCode}');
+      print('LOGOUT RAW RESPONSE BODY: ${response.body}');
+      if (await UnauthorizedHandler.handle401(context, response.statusCode)) {
+        return;
+      }
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        if (responseData['success'] == true) {
+          await prefs.remove('sessionToken');
+
+          if (!mounted) return;
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const LoggedOutScreen()),
+            (route) => false,
+          );
+          return;
+        }
+      }
+
+      _showError('Logout failed');
+    } catch (e) {
+      _showError('Error while logging out');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoggingOut = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _showLogoutConfirmationDialog() async {
+    if (_isLoggingOut) return;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return PopScope(
+          canPop: false,
+          child: Dialog(
+            insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+            backgroundColor: Colors.transparent,
+            child: Container(
+              height:  MediaQuery.of(context).size.height / 3,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF4F5F7),
+                borderRadius: BorderRadius.circular(34),
+              ),
+              padding: const EdgeInsets.fromLTRB(26, 26, 26, 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                // mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFF1ECE6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Image.asset('assets/logoutIcon.png'),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Log Out',
+                    style: TextStyle(
+                      color: Color(0xFFF27016),
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Are you sure you want to log out of your account ?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF79808B),
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 42,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: const Color(0xFFE6E7EB),
+                              foregroundColor: const Color(0xFF45484D),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel'),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SizedBox(
+                          height: 42,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              elevation: 0,
+                              backgroundColor: const Color(0xFFFF861F),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              textStyle: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            onPressed: () async {
+                              Navigator.of(dialogContext).pop();
+                              await _logout();
+                            },
+                            child: const Text('Logout'),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          )
+        );
+      },
     );
   }
 
@@ -989,6 +1176,33 @@ class _CreateInfluencerLinkState extends State<CreateInfluencerLink> {
                     height: 18,
                     color: AppColors.primaryColor,
                   ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _isLoggingOut ? null : _showLogoutConfirmationDialog,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFE6C9),
+                    shape: BoxShape.circle,
+                  ),
+                  child: _isLoggingOut
+                      ? const Padding(
+                          padding: EdgeInsets.all(10.0),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.primaryColor,
+                            ),
+                          ),
+                        )
+                      : const Icon(
+                          Icons.logout,
+                          size: 18,
+                          color: AppColors.primaryColor,
+                        ),
                 ),
               ),
             ],

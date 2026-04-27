@@ -9,6 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../utils/unauthorized_handler.dart';
 
 // ignore: camel_case_types
 class consentDialog extends StatefulWidget {
@@ -72,6 +73,9 @@ class _consentDialogState extends State<consentDialog> {
         Uri.parse(ApiEndpoints.agreementUrl),
         headers: headers,
       );
+      if (await UnauthorizedHandler.handle401(context, response.statusCode)) {
+        return;
+      }
 
       if (response.statusCode != 200) {
         _showError('Unable to load agreement');
@@ -133,6 +137,9 @@ class _consentDialogState extends State<consentDialog> {
         headers: headers,
         body: jsonEncode(bodyMap),
       );
+      if (await UnauthorizedHandler.handle401(context, response.statusCode)) {
+        return;
+      }
 
       if (response.statusCode >= 200 && response.statusCode < 300) {
         print('Agreement consent submitted successfully'+response.body);

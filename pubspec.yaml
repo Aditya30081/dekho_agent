@@ -104,6 +104,7 @@ flutter:
     - assets/fire.png
     - assets/star.png
     - assets/download.png
+    - assets/logoutIcon.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

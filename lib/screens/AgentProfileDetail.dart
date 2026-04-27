@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/AppColors.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import '../config/api_endpoints.dart';
+import '../utils/unauthorized_handler.dart';
 
 class AgentProfileDetail extends StatefulWidget {
   final Map<String, dynamic>? profileData;
@@ -164,6 +165,12 @@ class _AgentProfileDetailState extends State<AgentProfileDetail> {
 
       print('UPDATE PROFILE API Response Status: ${response.statusCode}');
       print('UPDATE PROFILE API Response Body: ${response.body}');
+      if (await UnauthorizedHandler.handle401(context, response.statusCode)) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
 
       setState(() {
         _isLoading = false;

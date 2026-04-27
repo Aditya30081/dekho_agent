@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:dekho_agent/screens/AgentProfileDetail.dart';
 import 'package:dekho_agent/screens/CreateInfluencerLink.dart';
+import 'package:dekho_agent/screens/LoginScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -108,6 +109,315 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _focusNodes[0].requestFocus();
     });
+  }
+
+  void _navigateToLoginWithMessage(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_LONG,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.red,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  void _navigateToLogin() {
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+
+  Future<void> _continueLoginAfterTakeover(
+    Map<String, dynamic> responseData,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final sessionToken = responseData['data']?['sessionToken'] ??
+        responseData['sessionToken'] ??
+        responseData['data']?['token'] ??
+        responseData['token'];
+    final userId = responseData['data']?['userId'] ?? responseData['userId'];
+    final userName = responseData['data']?['name'] ?? responseData['name'];
+    final profileCompleted = responseData['data']?['profileCompleted'] ??
+        responseData['profileCompleted'] ??
+        false;
+    final consentAcceptedRaw =
+        responseData['data']?['consentAccepted'] ?? responseData['consentAccepted'];
+    final consentAccepted = _toBool(consentAcceptedRaw);
+
+    if (sessionToken == null || sessionToken.toString().trim().isEmpty) {
+      final takeoverMessage =
+          responseData['message']?.toString() ?? 'Session token missing';
+      _navigateToLoginWithMessage(takeoverMessage);
+      return;
+    }
+
+    await prefs.setString('sessionToken', sessionToken.toString());
+    await prefs.setString('mobileNumber', widget.phoneNumber);
+
+    if (userId != null) {
+      await prefs.setString('userId', userId.toString());
+    }
+    if (userName != null) {
+      await prefs.setString('user_name', userName.toString());
+    }
+
+    if (!mounted) return;
+    if (!consentAccepted) {
+      final agreementAccepted = await consentDialog.show(
+        context,
+        sessionToken: sessionToken.toString(),
+      );
+      if (!agreementAccepted || !mounted) {
+        return;
+      }
+    }
+
+    if (profileCompleted == true) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const CreateInfluencerLink()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const AgentProfileDetail()),
+      );
+    }
+  }
+
+  Future<void> _showDeviceConflictDialog({
+    required String message,
+    required String takeoverToken,
+  }) async {
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        bool isConfirming = false;
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return PopScope(
+              canPop: false,
+              child: Dialog(
+                insetPadding: const EdgeInsets.symmetric(horizontal: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(26),
+                ),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(22, 24, 22, 18),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(26),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 118,
+                        height: 118,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF6ED),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFF4F4F4),
+                            width: 3,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.login_rounded,
+                          color: Color(0xFFF67A1F),
+                          size: 44,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Logged in Somewhere else',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFE87B23),
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Color(0xFF8B8F97),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          height: 1.45,
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF7EE),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(
+                              Icons.info,
+                              color: Color(0xFFF08A2C),
+                              size: 18,
+                            ),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Continuing will log out the other devices',
+                                style: TextStyle(
+                                  color: Color(0xFFE88A2D),
+                                  fontSize: 14,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Container(
+                        width: 126,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF7D6B7),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: isConfirming
+                              ? null
+                              : () async {
+                                  setDialogState(() {
+                                    isConfirming = true;
+                                  });
+
+                                  try {
+                                    final takeoverBody = {
+                                      'takeoverToken': takeoverToken,
+                                      'confirm': true,
+                                    };
+
+                                    print('CONFIRM TAKEOVER REQUEST URL: ${ApiEndpoints.confirmDeviceTakeoverUrl}');
+                                    print(
+                                      'CONFIRM TAKEOVER REQUEST BODY: ${jsonEncode(takeoverBody)}',
+                                    );
+
+                                    final takeoverResponse = await http.post(
+                                      Uri.parse(ApiEndpoints.confirmDeviceTakeoverUrl),
+                                      headers: {'Content-Type': 'application/json'},
+                                      body: jsonEncode(takeoverBody),
+                                    );
+
+                                    print(
+                                      'CONFIRM TAKEOVER RESPONSE STATUS: ${takeoverResponse.statusCode}',
+                                    );
+                                    print(
+                                      'CONFIRM TAKEOVER RESPONSE BODY: ${takeoverResponse.body}',
+                                    );
+
+                                    final Map<String, dynamic> takeoverData =
+                                        jsonDecode(takeoverResponse.body);
+                                    final takeoverMessage =
+                                        takeoverData['message']?.toString() ??
+                                            'Unable to continue login';
+
+                                    Navigator.of(dialogContext).pop();
+
+                                    if (takeoverResponse.statusCode == 200 &&
+                                        takeoverData['success'] == true) {
+                                      await _continueLoginAfterTakeover(takeoverData);
+                                    } else {
+                                      _navigateToLoginWithMessage(takeoverMessage);
+                                    }
+                                  } catch (e) {
+                                    Navigator.of(dialogContext).pop();
+                                    _navigateToLoginWithMessage(
+                                      'Unable to continue login',
+                                    );
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            foregroundColor: Colors.white,
+                            backgroundColor: const Color(0xFFF36C21),
+                            disabledBackgroundColor: const Color(0xFFF2B78F),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: isConfirming
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.4,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  'Continue Here',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    fontFamily: 'Inter',
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: isConfirming
+                            ? null
+                            : () {
+                                Navigator.of(dialogContext).pop();
+                                _navigateToLogin();
+                              },
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Color(0xFF7F8592),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   Future<void> _resendOtp() async {
@@ -299,6 +609,27 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
       
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
+        final bool isDeviceConflict =
+            responseData['code']?.toString().toUpperCase() == 'DEVICE_CONFLICT';
+        if (isDeviceConflict) {
+          final String conflictMessage =
+              responseData['message']?.toString() ??
+              'Your account is active on another device. Continue to logout from previous device?';
+          final String takeoverToken =
+              responseData['data']?['takeoverToken']?.toString() ?? '';
+
+          if (takeoverToken.isEmpty) {
+            _navigateToLoginWithMessage(conflictMessage);
+            return;
+          }
+
+          await _showDeviceConflictDialog(
+            message: conflictMessage,
+            takeoverToken: takeoverToken,
+          );
+          return;
+        }
+
         if (responseIndicatesMaintenance(responseData)) {
           await showMaintenanceModeBlockingDialog(
             context,
@@ -508,6 +839,26 @@ class _VerificationCodeScreenState extends State<VerificationCodeScreen> {
       } else {
         print('VERIFY OTP API Error - Status Code: ${response.statusCode}');
         final errorData = jsonDecode(response.body);
+        final bool isDeviceConflict =
+            errorData['code']?.toString().toUpperCase() == 'DEVICE_CONFLICT';
+        if (isDeviceConflict) {
+          final String conflictMessage =
+              errorData['message']?.toString() ??
+                  'Your account is active on another device. Continue to logout from previous device?';
+          final String takeoverToken =
+              errorData['data']?['takeoverToken']?.toString() ?? '';
+
+          if (takeoverToken.isEmpty) {
+            _navigateToLoginWithMessage(conflictMessage);
+            return;
+          }
+
+          await _showDeviceConflictDialog(
+            message: conflictMessage,
+            takeoverToken: takeoverToken,
+          );
+          return;
+        }
         if (responseIndicatesMaintenance(errorData)) {
           await showMaintenanceModeBlockingDialog(
             context,

@@ -4,15 +4,20 @@ class ApiConfig {
   static const Environment _currentEnvironment = Environment.dev;
 
   // Base URLs for different environments
-  static const String _devBaseUrl = 'https://p2p-backend.unibots.in';
+  static const String _devBaseUrl = 'https://p2p-backend-dev.thedekhoapp.com';
   static const String _prodBaseUrl = 'https://backend.thedekhoapp.com';
+  static const String _stagingBaseUrl = 'https://p2p-backend-staging.thedekhoapp.com';
 
   // Apk download URLs and file names for different environments
   static const String _devApkDownloadUrl =
       'https://p2pbackend.b-cdn.net/apk/agent/Master_Dekho_Agent_dev.apk';
   static const String _prodApkDownloadUrl =
       'https://p2pbackend.b-cdn.net/apk/agent/Master_Dekho_Agent.apk';
+  static const String _stagingApkDownloadUrl =
+      'https://p2pbackend.b-cdn.net/apk/agent/Master_Dekho_Agent_staging.apk';
+
   static const String _devApkFileName = 'Master_Dekho_Agent_dev.apk';
+  static const String _stagingApkFileName = 'Master_Dekho_Agent_staging.apk';
   static const String _prodApkFileName = 'Master_Dekho_Agent.apk';
 
 
@@ -23,6 +28,8 @@ class ApiConfig {
         return _devBaseUrl;
       case Environment.prod:
         return _prodBaseUrl;
+      case Environment.staging:
+        return _stagingBaseUrl;
     }
   }
 
@@ -33,6 +40,8 @@ class ApiConfig {
         return _devBaseUrl;
       case Environment.prod:
         return _prodBaseUrl;
+      case Environment.staging:
+        return _stagingBaseUrl;
     }
   }
 
@@ -45,6 +54,9 @@ class ApiConfig {
   /// Check if current environment is development
   static bool get isDevelopment => _currentEnvironment == Environment.dev;
 
+  /// Check if current environment is staging
+  static bool get isStaging => _currentEnvironment == Environment.staging;
+
   /// Get APK download URL based on selected environment
   static String get apkDownloadUrl {
     switch (_currentEnvironment) {
@@ -52,6 +64,8 @@ class ApiConfig {
         return _devApkDownloadUrl;
       case Environment.prod:
         return _prodApkDownloadUrl;
+      case Environment.staging:
+        return _stagingApkDownloadUrl;
     }
   }
 
@@ -62,6 +76,8 @@ class ApiConfig {
         return _devApkFileName;
       case Environment.prod:
         return _prodApkFileName;
+      case Environment.staging:
+        return _stagingApkFileName;
     }
   }
 }
@@ -70,5 +86,6 @@ class ApiConfig {
 enum Environment {
   dev,
   prod,
+  staging
 }
 

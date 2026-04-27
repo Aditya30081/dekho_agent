@@ -7,6 +7,8 @@ class ApiEndpoints {
   static const String sendOtp = '/auth/send-otp';
   static const String verifyOtp = '/auth/verify-otp';
   static const String sessionLogin = '/auth/session-login';
+  static const String logout = '/auth/logout';
+  static const String confirmDeviceTakeover = '/auth/confirm-device-takeover';
   static const String agreement = '/api/v1/agreement';
 
   // Agent endpoints
@@ -32,6 +34,8 @@ class ApiEndpoints {
   static String get sendOtpUrl => getApiUrl(sendOtp);
   static String get verifyOtpUrl => getApiUrl(verifyOtp);
   static String get sessionLoginUrl => getApiUrl(sessionLogin);
+  static String get logoutUrl => getApiUrl(logout);
+  static String get confirmDeviceTakeoverUrl => getApiUrl(confirmDeviceTakeover);
   static String get agreementUrl => getApiUrl(agreement);
   static String get updateProfileUrl => getApiUrl(updateProfile);
   static String get getProfileUrl => getApiUrl(getProfile);
