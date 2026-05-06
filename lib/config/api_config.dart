@@ -1,7 +1,7 @@
 /// API Configuration for managing base URLs across different environments
 class ApiConfig {
   // Environment enum
-  static const Environment _currentEnvironment = Environment.dev;
+  static const Environment _currentEnvironment = Environment.staging;
 
   // Base URLs for different environments
   static const String _devBaseUrl = 'https://p2p-backend-dev.thedekhoapp.com';

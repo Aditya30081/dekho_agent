@@ -1,12 +1,14 @@
+import 'package:dekho_agent/constants/AppColors.dart';
+import 'package:dekho_agent/screens/LoginScreen.dart';
 import 'package:flutter/material.dart';
 
 class LoggedOutScreen extends StatelessWidget {
-  const LoggedOutScreen ({super.key});
+  const LoggedOutScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF6F6F6),
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -15,52 +17,125 @@ class LoggedOutScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 118,
-                  height: 118,
+                  width: 130,
+                  height: 130,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: const Color(0xFFF5F2EC),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.power_settings_new_rounded,
-                    color: Color(0xFFF5791B),
-                    size: 56,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: const [
+                      Positioned(
+                        left: 30,
+                        top: 38,
+                        child: Icon(
+                          Icons.person_rounded,
+                          color: AppColors.primaryColor,
+                          size: 58,
+                        ),
+                      ),
+                      Positioned(
+                        right: 28,
+                        bottom: 38,
+                        child: Icon(
+                          Icons.lock_rounded,
+                          color: AppColors.primaryColor,
+                          size: 36,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 24),
                 const Text(
                   'Logged Out',
                   style: TextStyle(
-                    color: Color(0xFFF27016),
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
+                    color: AppColors.primaryColor,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 const Text(
-                  'Your device has been safely logged\nout.',
+                  'Your device has been safely logged out',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Color(0xFF7F8591),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    height: 1.45,
+                    color: AppColors.headlineTextColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 20),
                 Container(
-                  width: 62,
-                  height: 4,
+                  width: 170,
+                  height: 3,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF4CF9F),
+                    color: AppColors.border.withValues(alpha: 0.45),
                     borderRadius: BorderRadius.circular(20),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.5,
+                  height: 50,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(34),
+                      gradient: const LinearGradient(
+                        colors: [AppColors.primaryColor, AppColors.orange],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primaryColor.withValues(alpha: 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
+                          ),
+                              (route) => false,
+                        );
+                      },
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(34),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Return to Home',
+                            style: TextStyle(
+                              color: AppColors.textColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Icon(
+                            Icons.home_rounded,
+                            color: AppColors.textColor,
+                            size: 24,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -71,3 +146,4 @@ class LoggedOutScreen extends StatelessWidget {
     );
   }
 }
+
