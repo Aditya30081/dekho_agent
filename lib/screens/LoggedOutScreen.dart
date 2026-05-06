@@ -32,24 +32,9 @@ class LoggedOutScreen extends StatelessWidget {
                   ),
                   child: Stack(
                     alignment: Alignment.center,
-                    children: const [
+                    children: [
                       Positioned(
-                        left: 30,
-                        top: 38,
-                        child: Icon(
-                          Icons.person_rounded,
-                          color: AppColors.primaryColor,
-                          size: 58,
-                        ),
-                      ),
-                      Positioned(
-                        right: 28,
-                        bottom: 38,
-                        child: Icon(
-                          Icons.lock_rounded,
-                          color: AppColors.primaryColor,
-                          size: 36,
-                        ),
+                        child: Image.asset('assets/logout.png', width: 64, height: 64),
                       ),
                     ],
                   ),
